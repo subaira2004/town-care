@@ -1,5 +1,5 @@
 -- ============================================
--- TOWN CARE - Custom Authentication Schema
+-- TOWN CARE - Custom Authentication Schema with Admin Portal
 -- Run this in Supabase SQL Editor
 -- WARNING: This schema drops Supabase Auth and RLS. 
 -- Data security is handled via Next.js Server Actions.
@@ -15,6 +15,7 @@ create table public.app_users (
   id uuid primary key default uuid_generate_v4(),
   email text unique not null,
   password text not null,
+  role text default 'pharmacy' check (role in ('admin', 'pharmacy')),
   created_at timestamptz default now()
 );
 
@@ -25,18 +26,31 @@ create table public.sessions (
 );
 
 -- ============================================
+-- 0.5 TOWNS (Master Data)
+-- ============================================
+create table public.towns (
+  id uuid primary key default uuid_generate_v4(),
+  name text unique not null,
+  state text,
+  is_active boolean default true,
+  created_at timestamptz default now()
+);
+
+-- ============================================
 -- 1. PHARMACIES
 -- ============================================
 create table public.pharmacies (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid references public.app_users(id) on delete cascade not null unique,
   name text not null,
-  town text not null,
+  town_id uuid references public.towns(id),
+  town_name text not null, -- fallback or cache
   phone text not null,
   language text not null default 'en' check (language in ('en', 'ta', 'both')),
   upi_qr_url text,
   token_fee numeric(10,2) default 0,
   payment_required boolean default false,
+  status text default 'pending' check (status in ('pending', 'approved', 'rejected')),
   created_at timestamptz default now()
 );
 
@@ -49,6 +63,17 @@ create table public.doctors (
   specialty text,
   phone text,
   notes text,
+  created_at timestamptz default now()
+);
+
+create table public.doctor_edit_requests (
+  id uuid primary key default uuid_generate_v4(),
+  doctor_id uuid references public.doctors(id) on delete cascade not null,
+  pharmacy_id uuid references public.pharmacies(id) on delete cascade not null,
+  suggested_name text,
+  suggested_specialty text,
+  suggested_phone text,
+  status text default 'pending' check (status in ('pending', 'approved', 'rejected')),
   created_at timestamptz default now()
 );
 
@@ -87,11 +112,24 @@ create table public.patients (
   phone text not null,
   name text not null,
   relation text,
+  town_id uuid references public.towns(id),
+  town_name text,
   created_at timestamptz default now()
 );
 
 -- Index for quick phone lookups
 create index if not exists idx_patients_phone on public.patients(phone);
+
+create table public.patient_edit_requests (
+  id uuid primary key default uuid_generate_v4(),
+  patient_id uuid references public.patients(id) on delete cascade not null,
+  pharmacy_id uuid references public.pharmacies(id) on delete cascade not null,
+  suggested_name text,
+  suggested_phone text,
+  suggested_town text,
+  status text default 'pending' check (status in ('pending', 'approved', 'rejected')),
+  created_at timestamptz default now()
+);
 
 -- ============================================
 -- 6. TOKENS (Queue Entries)

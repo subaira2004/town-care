@@ -3,8 +3,8 @@ import { NextResponse } from 'next/server';
 export async function proxy(request) {
   const sessionCookie = request.cookies.get('towncare_session');
   
-  // Allow public routes
-  const publicPaths = ['/login', '/signup', '/status'];
+  // Allow public routes (admin has its own auth via layout.js)
+  const publicPaths = ['/login', '/signup', '/status', '/admin'];
   const isPublicPath = publicPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );

@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { signupAction } from '@/app/actions/auth';
+import { signupAction, getTowns } from '@/app/actions/auth';
 import Link from 'next/link';
 import { Activity, Loader2 } from 'lucide-react';
 
@@ -11,12 +11,22 @@ export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [town, setTown] = useState('');
+  const [townId, setTownId] = useState('');
+  const [townName, setTownName] = useState('');
   const [phone, setPhone] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [towns, setTowns] = useState([]);
   const router = useRouter();
-  const supabase = createClient();
+
+
+  useEffect(() => {
+    async function loadTowns() {
+      const data = await getTowns();
+      setTowns(data || []);
+    }
+    loadTowns();
+  }, []);
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -58,8 +68,25 @@ export default function SignupPage() {
 
           <div style={{ display: 'flex', gap: '1rem' }}>
             <div className="form-group" style={{ flex: 1 }}>
-              <label className="form-label" htmlFor="town">Town / City</label>
-              <input id="town" name="town" type="text" className="form-input" value={town} onChange={(e) => setTown(e.target.value)} required placeholder="Salem" />
+              <label className="form-label" htmlFor="town_id">Town / City</label>
+              <select 
+                id="town_id" 
+                name="town_id" 
+                className="form-select" 
+                value={townId} 
+                onChange={(e) => {
+                  setTownId(e.target.value);
+                  const selected = towns.find(t => t.id === e.target.value);
+                  if (selected) setTownName(selected.name);
+                }} 
+                required
+              >
+                <option value="" disabled>Select Town</option>
+                {towns.map(t => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+              </select>
+              <input type="hidden" name="town_name" value={townName} />
             </div>
             
             <div className="form-group" style={{ flex: 1 }}>

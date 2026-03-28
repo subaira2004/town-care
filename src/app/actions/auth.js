@@ -8,6 +8,9 @@ const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dummy.supabase.co';
 const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'dummy';
 const supabase = createClient(url, key);
 
+// ==========================================
+// PHARMACY AUTH
+// ==========================================
 export async function loginAction(formData) {
   const email = formData.get('email');
   const password = formData.get('password');
@@ -35,11 +38,17 @@ export async function loginAction(formData) {
   return { success: true };
 }
 
+export async function getTowns() {
+  const { data } = await supabase.from('towns').select('*').eq('is_active', true).order('name');
+  return data || [];
+}
+
 export async function signupAction(formData) {
   const email = formData.get('email');
   const password = formData.get('password');
   const name = formData.get('name');
-  const town = formData.get('town');
+  const town_id = formData.get('town_id');
+  const town_name = formData.get('town_name');
   const phone = formData.get('phone');
 
   // Check if email exists
@@ -61,11 +70,13 @@ export async function signupAction(formData) {
   const { error: pharmacyError } = await supabase.from('pharmacies').insert([{
     user_id: newUser.id,
     name,
-    town,
-    phone
+    town_id: town_id || null,
+    town_name,
+    phone,
+    status: 'pending'
   }]);
 
-  if (pharmacyError) return { error: 'Failed to create pharmacy profile' };
+  if (pharmacyError) return { error: 'Failed to create pharmacy profile. ' + pharmacyError.message };
 
   // Auto Login
   const { data: session } = await supabase.from('sessions').insert([{ user_id: newUser.id }]).select().single();
@@ -74,7 +85,7 @@ export async function signupAction(formData) {
   cookieStore.set('towncare_session', session.id, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    maxAge: 60 * 60 * 24 * 30, // 30 days
+    maxAge: 60 * 60 * 24 * 30,
     path: '/',
   });
 
@@ -84,10 +95,16 @@ export async function signupAction(formData) {
 export async function logoutAction() {
   const cookieStore = await cookies();
   const sessionId = cookieStore.get('towncare_session')?.value;
+  const adminSessionId = cookieStore.get('towncare_admin_session')?.value;
+  
   if (sessionId) {
     await supabase.from('sessions').delete().eq('id', sessionId);
   }
   cookieStore.delete('towncare_session');
+  
+  if (adminSessionId) {
+    cookieStore.delete('towncare_admin_session');
+  }
 }
 
 export async function getAuthUser() {
@@ -102,4 +119,47 @@ export async function getAuthUser() {
 
   if (!session) return null;
   return session.app_users;
+}
+
+// ==========================================
+// PLATFORM ADMIN AUTH (separate table)
+// ==========================================
+export async function adminLoginAction(formData) {
+  const email = formData.get('email');
+  const password = formData.get('password');
+
+  const { data: admin } = await supabase.from('platform_admins').select('*').eq('email', email).single();
+  if (!admin) return { error: 'Invalid admin credentials' };
+
+  const isValid = bcrypt.compareSync(password, admin.password);
+  if (!isValid) return { error: 'Invalid admin credentials' };
+
+  // Store admin ID in a separate cookie
+  const cookieStore = await cookies();
+  cookieStore.set('towncare_admin_session', admin.id, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 60 * 60 * 24 * 7, // 7 days for admin
+    path: '/',
+  });
+
+  return { success: true };
+}
+
+export async function getAdminUser() {
+  const cookieStore = await cookies();
+  const adminId = cookieStore.get('towncare_admin_session')?.value;
+  if (!adminId) return null;
+
+  const { data: admin } = await supabase.from('platform_admins')
+    .select('id, email, name')
+    .eq('id', adminId)
+    .single();
+
+  return admin || null;
+}
+
+export async function adminLogoutAction() {
+  const cookieStore = await cookies();
+  cookieStore.delete('towncare_admin_session');
 }

@@ -15,7 +15,9 @@ export default function DoctorsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   
   const [newDoc, setNewDoc] = useState({ name: '', specialty: '', phone: '', notes: '' });
-  
+  const [editingDoctorId, setEditingDoctorId] = useState(null);
+  const [editDoc, setEditDoc] = useState({ name: '', specialty: '', phone: '' });
+
   const supabase = createClient();
 
   useEffect(() => {
@@ -69,6 +71,24 @@ export default function DoctorsPage() {
     fetchData();
   };
 
+  const startEdit = (doctor) => {
+    setEditingDoctorId(doctor.id);
+    setEditDoc({ name: doctor.name, specialty: doctor.specialty || '', phone: doctor.phone || '' });
+  };
+
+  const submitEditRequest = async (e) => {
+    e.preventDefault();
+    await supabase.from('doctor_edit_requests').insert([{
+      doctor_id: editingDoctorId,
+      pharmacy_id: pharmacy.id,
+      suggested_name: editDoc.name,
+      suggested_specialty: editDoc.specialty,
+      suggested_phone: editDoc.phone
+    }]);
+    setEditingDoctorId(null);
+    alert('Edit suggestion sent globally to Platform Admin for approval.');
+  };
+
   if (loading) return <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4rem' }}><Loader2 className="animate-spin" color="var(--primary)" size={32} /></div>;
 
   const pref = pharmacy?.language || 'en';
@@ -107,19 +127,41 @@ export default function DoctorsPage() {
               ) : (
                 filteredDoctors.map(doctor => {
                   const isLinked = myDoctors.includes(doctor.id);
+                  const isEditing = editingDoctorId === doctor.id;
+                  
                   return (
-                    <div key={doctor.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', backgroundColor: isLinked ? 'var(--surface-hover)' : 'var(--surface)' }}>
-                      <div>
-                        <h3 style={{ margin: '0 0 0.25rem 0', fontSize: '1rem' }}>Dr. {doctor.name}</h3>
-                        <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-muted)' }}>{doctor.specialty || 'General'}</p>
+                    <div key={doctor.id} style={{ display: 'flex', flexDirection: 'column', padding: '1rem', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', backgroundColor: isLinked ? 'var(--surface-hover)' : 'var(--surface)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <h3 style={{ margin: '0 0 0.25rem 0', fontSize: '1rem' }}>Dr. {doctor.name}</h3>
+                          <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-muted)' }}>{doctor.specialty || 'General'}</p>
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          {isLinked && !isEditing && (
+                            <button onClick={() => startEdit(doctor)} className="btn btn-outline" style={{ padding: '0.5rem', fontSize: '0.875rem' }}>Suggest Edit</button>
+                          )}
+                          <button 
+                            onClick={() => toggleDoctorLink(doctor.id, isLinked)}
+                            className={`btn ${isLinked ? 'btn-outline' : 'btn-primary'}`}
+                            style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
+                          >
+                            {isLinked ? t('unlink', pref) : t('linkToPharmacy', pref)}
+                          </button>
+                        </div>
                       </div>
-                      <button 
-                        onClick={() => toggleDoctorLink(doctor.id, isLinked)}
-                        className={`btn ${isLinked ? 'btn-outline' : 'btn-primary'}`}
-                        style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
-                      >
-                        {isLinked ? t('unlink', pref) : t('linkToPharmacy', pref)}
-                      </button>
+                      
+                      {isEditing && (
+                        <form onSubmit={submitEditRequest} style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                          <h4 style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-main)' }}>Suggest Edits to Admin</h4>
+                          <input type="text" className="form-input form-input-sm" value={editDoc.name} onChange={e => setEditDoc({...editDoc, name: e.target.value})} placeholder="Doctor Name" required />
+                          <input type="text" className="form-input form-input-sm" value={editDoc.specialty} onChange={e => setEditDoc({...editDoc, specialty: e.target.value})} placeholder="Specialty" />
+                          <input type="tel" className="form-input form-input-sm" value={editDoc.phone} onChange={e => setEditDoc({...editDoc, phone: e.target.value})} placeholder="Phone" />
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button type="submit" className="btn btn-secondary btn-sm" style={{ flex: 1 }}>Submit Edit</button>
+                            <button type="button" onClick={() => setEditingDoctorId(null)} className="btn btn-outline btn-sm">Cancel</button>
+                          </div>
+                        </form>
+                      )}
                     </div>
                   );
                 })
@@ -143,6 +185,11 @@ export default function DoctorsPage() {
                   <span style={{ fontWeight: '600', color: 'var(--text-muted)' }}>Dr.</span>
                   <input type="text" className="form-input" required value={newDoc.name} onChange={e => setNewDoc({...newDoc, name: e.target.value})} placeholder="John Doe" />
                 </div>
+                {newDoc.name.length > 2 && allDoctors.some(d => d.name.toLowerCase().includes(newDoc.name.toLowerCase())) && (
+                  <p style={{ color: 'var(--warning)', fontSize: '0.75rem', marginTop: '0.5rem', lineHeight: 1.4 }}>
+                    <strong>Notice:</strong> A doctor matching "{newDoc.name}" already exists globally! Search locally on the left instead of creating a duplicate.
+                  </p>
+                )}
               </div>
               
               <div className="form-group">

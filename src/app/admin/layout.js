@@ -3,70 +3,52 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Activity, LayoutDashboard, HeartPulse, CalendarCheck, Users, Settings, LogOut, Menu, X } from 'lucide-react';
-import { logoutAction } from '@/app/actions/auth';
-import { createClient } from '@/lib/supabase/client';
+import { Shield, Store, MapPin, HeartPulse, Users, LogOut, Menu, X } from 'lucide-react';
+import { adminLogoutAction, getAdminUser } from '@/app/actions/auth';
 
-export default function DashboardLayout({ children }) {
+export default function AdminLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [pharmStatus, setPharmStatus] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [admin, setAdmin] = useState(null);
   const pathname = usePathname();
   const router = useRouter();
 
+  // Don't apply layout to login page
+  const isLoginPage = pathname === '/admin/login';
+
   useEffect(() => {
-    async function checkSecurity() {
-      const { getAuthUser } = await import('@/app/actions/auth');
-      const user = await getAuthUser();
-      if (!user) {
-        router.push('/login');
+    if (isLoginPage) {
+      setLoading(false);
+      return;
+    }
+    async function checkAdmin() {
+      const adm = await getAdminUser();
+      if (!adm) {
+        router.push('/admin/login');
         return;
       }
-
-      const supabase = createClient();
-      const { data: pData } = await supabase.from('pharmacies').select('status').eq('user_id', user.id).single();
-      if (pData) {
-        setPharmStatus(pData.status);
-      }
+      setAdmin(adm);
       setLoading(false);
     }
-    checkSecurity();
-  }, [router]);
+    checkAdmin();
+  }, [router, isLoginPage]);
+
+  if (isLoginPage) return <>{children}</>;
+
+  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', height: '100vh', alignItems: 'center' }}><Shield className="animate-pulse" size={48} color="var(--primary)"/></div>;
 
   const handleLogout = async () => {
-    await logoutAction();
-    router.push('/login');
+    await adminLogoutAction();
+    router.push('/admin/login');
     router.refresh();
   };
 
   const menuItems = [
-    { name: 'Dashboard', icon: <LayoutDashboard size={20}/>, path: '/dashboard' },
-    { name: 'Doctors', icon: <HeartPulse size={20}/>, path: '/dashboard/doctors' },
-    { name: 'Schedules', icon: <CalendarCheck size={20}/>, path: '/dashboard/schedules' },
-    { name: 'Token Queue', icon: <Users size={20}/>, path: '/dashboard/queue' },
-    { name: 'Settings', icon: <Settings size={20}/>, path: '/dashboard/settings' },
+    { name: 'Pharmacies', icon: <Store size={20}/>, path: '/admin' },
+    { name: 'Master Towns', icon: <MapPin size={20}/>, path: '/admin/towns' },
+    { name: 'Doctors', icon: <HeartPulse size={20}/>, path: '/admin/doctors' },
+    { name: 'Patients', icon: <Users size={20}/>, path: '/admin/patients' },
   ];
-
-  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', height: '100vh', alignItems: 'center' }}><Activity className="animate-pulse" size={48} color="var(--primary)"/></div>;
-
-  if (pharmStatus !== 'approved') {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', padding: '2rem', textAlign: 'center', backgroundColor: 'var(--background)' }}>
-        <div className="card glass-panel" style={{ maxWidth: '500px', padding: '3rem' }}>
-          <Activity size={64} color={pharmStatus === 'rejected' ? 'var(--danger)' : 'var(--warning)'} style={{ margin: '0 auto 1.5rem auto' }} />
-          <h1 style={{ fontSize: '1.75rem', marginBottom: '1rem', color: 'var(--text-main)' }}>
-            {pharmStatus === 'rejected' ? 'Account Deactivated' : 'Approval Pending'}
-          </h1>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', lineHeight: 1.6 }}>
-            {pharmStatus === 'rejected' 
-              ? 'Your pharmacy account has been deactivated by the platform owner. Please contact support if you believe this is an error.' 
-              : 'Your pharmacy account is currently under review by the Platform Owner. Once approved, you will have full access to manage your queue.'}
-          </p>
-          <button onClick={handleLogout} className="btn btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}><LogOut size={16}/> Logout</button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--background)' }}>
@@ -91,16 +73,18 @@ export default function DashboardLayout({ children }) {
         transform: isSidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
         transition: 'transform 0.3s ease',
         zIndex: 40,
-        '@media (minWidth: 768px)': { transform: 'translateX(0)', position: 'sticky' }
       }} className="sidebar-container">
         <div style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '1px solid var(--border)', height: '70px' }}>
-          <Activity size={28} color="var(--primary)" />
-          <span style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-main)' }}>Town Care</span>
+          <Shield size={28} color="var(--primary)" />
+          <div>
+            <span style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--text-main)', display: 'block' }}>Town Care</span>
+            <span style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 600, letterSpacing: '0.05em' }}>ADMIN CONSOLE</span>
+          </div>
         </div>
         
         <nav style={{ flex: 1, padding: '1.5rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           {menuItems.map((item) => {
-            const isActive = pathname === item.path || (pathname.startsWith(item.path) && item.path !== '/dashboard');
+            const isActive = pathname === item.path;
             return (
               <Link 
                 key={item.name} 
@@ -127,6 +111,7 @@ export default function DashboardLayout({ children }) {
         </nav>
 
         <div style={{ padding: '1rem', borderTop: '1px solid var(--border)' }}>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0 0 0.75rem 1rem' }}>{admin?.email}</p>
           <button 
             onClick={handleLogout}
             style={{
@@ -151,10 +136,7 @@ export default function DashboardLayout({ children }) {
       </aside>
 
       {/* Main Content */}
-      <main style={{ flex: 1, padding: '2rem', marginLeft: '0', 
-         // inline styles for standard css, we should ideally use normal css classes for media queries
-         // but simple styles work for this project.
-      }} className="main-content">
+      <main style={{ flex: 1, padding: '2rem', marginLeft: '0' }} className="main-content">
         <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', paddingTop: '3rem' }}>
           {children}
         </div>

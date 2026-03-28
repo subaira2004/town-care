@@ -56,6 +56,33 @@ export function generateStatusUrl(tokenId) {
   return `/status/${tokenId}`;
 }
 
+/**
+ * Standardizes any Indian phone number to +91XXXXXXXXXX
+ */
+export function formatPhone(phone) {
+  if (!phone) return null;
+  // Remove all non-digits
+  const cleaned = phone.replace(/\D/g, '');
+  
+  // If 10 digits, add +91
+  if (cleaned.length === 10) return `+91${cleaned}`;
+  
+  // If 12 digits starting with 91, add +
+  if (cleaned.length === 12 && cleaned.startsWith('91')) return `+${cleaned}`;
+  
+  // Otherwise, if it starts with +91 and has 10 digits after, it's already good
+  if (phone.startsWith('+91') && cleaned === phone.slice(1)) return phone;
+
+  return phone; // Return as is if it doesn't match Indian pattern
+}
+
+export function isValidPhone(phone) {
+  if (!phone) return false;
+  const cleaned = formatPhone(phone);
+  // Valid Indian phone is +91 followed by 10 digits
+  return /^\+91\d{10}$/.test(cleaned);
+}
+
 export function getWhatsAppUrl(message) {
   return `https://wa.me/?text=${encodeURIComponent(message)}`;
 }

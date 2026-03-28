@@ -23,35 +23,32 @@ export default function TokenStatusPage() {
     if (id) {
       fetchData();
       
-      const channel = supabase
-        .channel(`public:token:${id}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'tokens' }, payload => {
-          // A token in same schedule might have updated
-          // Or this token specifically. Re-fetch all tokens to recalculate wait.
-          fetchTokens(token?.schedule_id);
-        })
-        .subscribe();
+      // Fallback polling since Realtime publications are disabled in our custom MVP schema
+      const interval = setInterval(() => {
+        fetchData();
+      }, 10000);
         
-      return () => { supabase.removeChannel(channel); };
+      return () => clearInterval(interval);
     }
-  }, [id, token?.schedule_id]);
+  }, [id]);
 
   const fetchData = async () => {
-    setLoading(true);
+    // Only set standard thick loading screen on the very first mount
+    setLoading(prev => token ? false : true);
     
     // Fetch this token
     const { data: tData } = await supabase.from('tokens').select('*, patients(name)').eq('id', id).single();
     if (tData) {
       setToken(tData);
       
-      // Fetch Schedule & Doctor
-      const { data: sData } = await supabase.from('schedules').select('*, doctors(name, specialty)').eq('id', tData.schedule_id).single();
-      if (sData) {
-        setSchedule(sData);
-        
-        // Fetch Pharmacy
-        const { data: pData } = await supabase.from('pharmacies').select('*').eq('id', sData.pharmacy_id).single();
-        if (pData) setPharmacy(pData);
+      // Fetch Schedule & Doctor only if missing
+      if (!schedule) {
+        const { data: sData } = await supabase.from('schedules').select('*, doctors(name, specialty)').eq('id', tData.schedule_id).single();
+        if (sData) {
+          setSchedule(sData);
+          const { data: pData } = await supabase.from('pharmacies').select('*').eq('id', sData.pharmacy_id).single();
+          if (pData) setPharmacy(pData);
+        }
       }
       
       await fetchTokens(tData.schedule_id);
