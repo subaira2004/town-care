@@ -134,6 +134,12 @@ const translations = {
     generateToken: "Generate Token",
     enterTenDigits: "Enter 10 Digits",
     validNumber: "Valid Number",
+    patientIsPresent: "Patient is present",
+    futureAppointment: "Future appointment",
+    noSchedulesForDate: "No schedules for this date",
+    noSchedulesForToday: "No schedules for today",
+    walkInForTodayOnly: "Walk-in tokens are for today's schedule only",
+    selectTimeSlot: "Select Time Slot",
 
     // Patient
     patientPhone: "Patient Phone Number",
@@ -327,6 +333,12 @@ const translations = {
     generateToken: "டோக்கன் உருவாக்கு",
     enterTenDigits: "10 எண்களை உள்ளிடுக",
     validNumber: "சரியான எண்",
+    patientIsPresent: "நோயாளி இங்கு உள்ளார்",
+    futureAppointment: "எதிர்கால அப்பாயிண்ட்மென்ட்",
+    noSchedulesForDate: "இந்த தேதிக்கு நேர அட்டவணை இல்லை",
+    noSchedulesForToday: "இன்று நேர அட்டவணை இல்லை",
+    walkInForTodayOnly: "வாக்-இன் டோக்கன்கள் இன்று மட்டும்",
+    selectTimeSlot: "நேரத்தைத் தேர்ந்தெடுக்கவும்",
 
     // Patient
     patientPhone: "நோயாளி தொலைபேசி எண்",

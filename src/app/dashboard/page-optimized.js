@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import useSWR from 'swr';
 import {
   Loader2,
   Calendar,
@@ -19,52 +20,82 @@ import { t } from "@/lib/i18n/translations";
 import Link from "next/link";
 
 export default function DashboardPage() {
-  const [loading, setLoading] = useState(true);
   const [pharmacy, setPharmacy] = useState(null);
-  const [activeSessions, setActiveSessions] = useState([]);
-
   const supabase = createClient();
+  const today = getTodayDate();
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+  // Fetch pharmacy data with SWR caching
+  const { data: pharmacyData, isLoading: pharmacyLoading } = useSWR(
+    'dashboard-pharmacy',
+    async () => {
+      const user = await getAuthUser();
+      if (!user) return null;
 
-  const fetchDashboardData = async () => {
-    setLoading(true);
-    const user = await getAuthUser();
-    if (!user) return;
+      const { data } = await supabase
+        .from("pharmacies")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
 
-    const { data: pData } = await supabase
-      .from("pharmacies")
-      .select("*")
-      .eq("user_id", user.id)
-      .single();
-    if (pData) {
-      setPharmacy(pData);
-      const today = getTodayDate();
+      if (data) setPharmacy(data);
+      return data;
+    },
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 60000, // 1 minute cache
+    }
+  );
+
+  // Fetch today's schedules with tokens - auto refresh
+  const { data: activeSessions, isLoading: sessionsLoading } = useSWR(
+    pharmacyData ? `dashboard-sessions-${pharmacyData.id}-${today}` : null,
+    async () => {
+      if (!pharmacyData) return [];
+
       const { data: scheds } = await supabase
         .from("schedules")
         .select(
-          `*, doctors(name, specialty), tokens(id, token_number, status, patients(name, phone))`,
+          `*, doctors(name, specialty), tokens(id, token_number, status, patients(name))`,
         )
-        .eq("pharmacy_id", pData.id)
-        .eq("schedule_date", today);
-      setActiveSessions(scheds || []);
+        .eq("pharmacy_id", pharmacyData.id)
+        .eq("schedule_date", today)
+        .eq("is_active", true);
+
+      return scheds || [];
+    },
+    {
+      revalidateOnFocus: false,
+      refreshInterval: 30000, // Auto-refresh every 30 seconds
+      dedupingInterval: 10000,
     }
-    setLoading(false);
-  };
+  );
 
   const updateStatus = async (tokenId, newStatus) => {
     await supabase
       .from("tokens")
       .update({ status: newStatus, updated_at: new Date().toISOString() })
       .eq("id", tokenId);
-    fetchDashboardData();
+
+    // Optimistic update - mutate cache immediately
+    const cacheKey = `dashboard-sessions-${pharmacyData.id}-${today}`;
+    const currentData = activeSessions || [];
+    const updatedData = currentData.map(session => ({
+      ...session,
+      tokens: session.tokens?.map(token =>
+        token.id === tokenId
+          ? { ...token, status: newStatus }
+          : token
+      )
+    }));
+
+    // Mutate SWR cache
+    import('swr').then(({ mutate }) => mutate(cacheKey, updatedData, false));
   };
 
-  const pref = pharmacy?.language || "en";
+  const pref = pharmacyData?.language || "en";
+  const loading = pharmacyLoading || sessionsLoading;
 
-  if (loading)
+  if (loading || !pharmacyData)
     return (
       <div
         style={{ display: "flex", justifyContent: "center", marginTop: "4rem" }}
@@ -84,7 +115,7 @@ export default function DashboardPage() {
             marginBottom: "0.5rem",
           }}
         >
-          {pharmacy?.name}
+          {pharmacyData?.name}
         </h1>
         <div
           style={{
@@ -107,7 +138,7 @@ export default function DashboardPage() {
       </div>
 
       <div>
-        {activeSessions.length === 0 ? (
+        {(!activeSessions || activeSessions.length === 0) ? (
           <div
             className="card glass-panel"
             style={{
@@ -169,8 +200,6 @@ export default function DashboardPage() {
                 const active = session.tokens?.find(
                   (t) => t.status === "in_consultation",
                 );
-                const completed =
-                  session.tokens?.filter((t) => t.status === "completed") || [];
 
                 return (
                   <div
@@ -186,9 +215,7 @@ export default function DashboardPage() {
                           ? "1px solid var(--border)"
                           : "none",
                       backgroundColor:
-                        index % 2 === 0
-                          ? "var(--surface)"
-                          : "var(--background)",
+                        index % 2 === 0 ? "var(--surface)" : "var(--background)",
                     }}
                   >
                     {/* Doctor */}

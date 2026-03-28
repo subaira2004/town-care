@@ -36,9 +36,11 @@ import { t, getShareMessage, getStatusLabel } from "@/lib/i18n/translations";
 function QueueContent() {
   const [loading, setLoading] = useState(true);
   const [pharmacy, setPharmacy] = useState(null);
-  const [schedules, setSchedules] = useState([]);
+  const [schedules, setSchedules] = useState([]); // For booking (any date)
+  const [todaysSchedules, setTodaysSchedules] = useState([]); // For queue management (today only)
   const [selectedDate, setSelectedDate] = useState(getTodayDate());
-  const [selectedScheduleId, setSelectedScheduleId] = useState("");
+  const [selectedScheduleId, setSelectedScheduleId] = useState(""); // For queue management (today)
+  const [bookingScheduleId, setBookingScheduleId] = useState(""); // For booking form
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [tokens, setTokens] = useState([]);
 
@@ -71,14 +73,14 @@ function QueueContent() {
 
   useEffect(() => {
     if (selectedScheduleId) {
-      const sched = schedules.find((s) => s.id === selectedScheduleId);
+      const sched = todaysSchedules.find((s) => s.id === selectedScheduleId);
       setSelectedSchedule(sched);
       fetchTokens(selectedScheduleId);
     } else {
       setSelectedSchedule(null);
       setTokens([]);
     }
-  }, [selectedScheduleId, schedules]);
+  }, [selectedScheduleId, todaysSchedules]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -112,6 +114,7 @@ function QueueContent() {
       .single();
     if (pData) {
       setPharmacy(pData);
+      // Fetch schedules for selected date (for booking)
       const { data: scheds } = await supabase
         .from("schedules")
         .select("*, doctors(name)")
@@ -119,17 +122,34 @@ function QueueContent() {
         .eq("schedule_date", selectedDate);
       setSchedules(scheds || []);
 
+      // Set booking schedule to first available for selected date
       if (scheds && scheds.length > 0) {
+        setBookingScheduleId(scheds[0].id);
+      } else {
+        setBookingScheduleId("");
+      }
+
+      // Fetch today's schedules separately (for queue management)
+      const today = getTodayDate();
+      const { data: todayScheds } = await supabase
+        .from("schedules")
+        .select("*, doctors(name)")
+        .eq("pharmacy_id", pData.id)
+        .eq("schedule_date", today);
+      setTodaysSchedules(todayScheds || []);
+
+      // Set selected schedule from today's schedules for queue management
+      if (todayScheds && todayScheds.length > 0) {
         if (
           initialScheduleParam &&
-          scheds.some((s) => s.id === initialScheduleParam)
+          todayScheds.some((s) => s.id === initialScheduleParam)
         ) {
           setSelectedScheduleId(initialScheduleParam);
         } else if (
           !selectedScheduleId ||
-          !scheds.some((s) => s.id === selectedScheduleId)
+          !todayScheds.some((s) => s.id === selectedScheduleId)
         ) {
-          setSelectedScheduleId(scheds[0].id);
+          setSelectedScheduleId(todayScheds[0].id);
         }
       } else {
         setSelectedScheduleId("");
@@ -172,14 +192,18 @@ function QueueContent() {
         .select();
       if (created?.[0]) patientId = created[0].id;
     }
-    if (patientId && selectedScheduleId) {
-      const maxToken = tokens.reduce(
-        (max, t) => Math.max(max, t.token_number),
-        0,
-      );
+    if (patientId && bookingScheduleId) {
+      // Get tokens for the booking schedule to calculate max token
+      const { data: bookingTokens } = await supabase
+        .from("tokens")
+        .select("token_number")
+        .eq("schedule_id", bookingScheduleId);
+      const maxToken = bookingTokens
+        ? bookingTokens.reduce((max, t) => Math.max(max, t.token_number), 0)
+        : 0;
       await supabase.from("tokens").insert([
         {
-          schedule_id: selectedScheduleId,
+          schedule_id: bookingScheduleId,
           patient_id: patientId,
           token_number: maxToken + 1,
           booking_type: bookingType,
@@ -200,6 +224,7 @@ function QueueContent() {
     setSelectedPatient(null);
     setNewPatientData({ name: "", phone: "", relation: "Self" });
     setAppointmentTime("");
+    setBookingScheduleId("");
   };
 
   const handleShare = (token) => {
@@ -228,7 +253,18 @@ function QueueContent() {
 
   const handleWhatsAppShare = () => {
     const message = getShareMessageForToken(selectedToken);
-    const url = getWhatsAppUrl(message);
+    // Get patient phone number and format it for WhatsApp (remove + and spaces)
+    const patientPhone =
+      selectedToken.patients?.phone?.replace(/\D/g, "") || "";
+    // Format: remove country code if present, then add 91 for India
+    const formattedPhone = patientPhone.startsWith("91")
+      ? patientPhone
+      : patientPhone.startsWith("0")
+        ? "91" + patientPhone.slice(1)
+        : "91" + patientPhone;
+
+    // Use wa.me with phone number to open direct chat
+    const url = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank");
   };
 
@@ -238,12 +274,12 @@ function QueueContent() {
     window.location.href = url;
   };
 
-  const generateSlots = () => {
-    if (!selectedSchedule) return [];
+  const generateSlots = (schedule) => {
+    if (!schedule) return [];
     const slots = [];
-    const [startH, startM] = selectedSchedule.start_time.split(":").map(Number);
-    const [endH, endM] = selectedSchedule.end_time.split(":").map(Number);
-    const interval = selectedSchedule.avg_consultation_minutes || 15;
+    const [startH, startM] = schedule.start_time.split(":").map(Number);
+    const [endH, endM] = schedule.end_time.split(":").map(Number);
+    const interval = schedule.avg_consultation_minutes || 15;
     let current = new Date();
     current.setHours(startH, startM, 0, 0);
     const end = new Date();
@@ -258,6 +294,9 @@ function QueueContent() {
     }
     return slots;
   };
+
+  // Get the booking schedule for the slot generator
+  const bookingSchedule = schedules.find((s) => s.id === bookingScheduleId);
 
   const pref = pharmacy?.language || "en";
   if (loading)
@@ -301,7 +340,7 @@ function QueueContent() {
                 {t("tokenQueue", pref)}
               </h1>
               <p style={{ color: "var(--text-muted)", fontWeight: 600 }}>
-                {new Date(selectedDate).toLocaleDateString(
+                {new Date(getTodayDate()).toLocaleDateString(
                   pref === "ta" ? "ta-IN" : "en-IN",
                   { weekday: "long", month: "long", day: "numeric" },
                 )}
@@ -322,11 +361,17 @@ function QueueContent() {
               value={selectedScheduleId}
               onChange={(e) => setSelectedScheduleId(e.target.value)}
             >
-              {schedules.map((s) => (
-                <option key={s.id} value={s.id}>
-                  Dr. {s.doctors?.name}
+              {todaysSchedules.length > 0 ? (
+                todaysSchedules.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    Dr. {s.doctors?.name}
+                  </option>
+                ))
+              ) : (
+                <option value="" disabled>
+                  {t("noSchedulesForToday", pref)}
                 </option>
-              ))}
+              )}
             </select>
           </div>
 
@@ -561,7 +606,7 @@ function QueueContent() {
               <UserPlus size={32} /> {t("addToken", pref)}
             </h2>
 
-            {/* DATE */}
+            {/* BOOKING TYPE - FIRST STEP */}
             <div className="form-group" style={{ marginBottom: "2.5rem" }}>
               <label
                 className="form-label"
@@ -570,43 +615,102 @@ function QueueContent() {
                   fontSize: "0.75rem",
                   color: "var(--text-muted)",
                   letterSpacing: "0.1em",
+                  marginBottom: "1rem",
                 }}
               >
-                1. {t("appointmentDate", pref).toUpperCase()}
+                1. {t("bookingType", pref).toUpperCase()}
               </label>
-              <div style={{ position: "relative" }}>
-                <Calendar
-                  size={18}
+              <div style={{ display: "flex", gap: "1rem" }}>
+                <button
+                  type="button"
+                  onClick={() => setBookingType("walk_in")}
                   style={{
-                    position: "absolute",
-                    left: "1.25rem",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    opacity: 0.5,
-                  }}
-                />
-                <input
-                  type="date"
-                  className="form-input"
-                  style={{
-                    paddingLeft: "3.5rem",
-                    height: "4rem",
-                    fontSize: "1.125rem",
-                    color: "var(--text-main)",
-                    backgroundColor: "var(--surface)",
+                    flex: 1,
+                    padding: "1.5rem",
                     borderRadius: "1.25rem",
+                    border: `3px solid ${bookingType === "walk_in" ? "var(--secondary)" : "var(--border)"}`,
+                    backgroundColor:
+                      bookingType === "walk_in"
+                        ? "rgba(16, 185, 129, 0.05)"
+                        : "var(--surface)",
+                    color: "var(--text-main)",
                     fontWeight: 800,
+                    fontSize: "1.1rem",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    cursor: "pointer",
                   }}
-                  value={selectedDate}
-                  onChange={(e) => {
-                    setSelectedDate(e.target.value);
-                    resetBookingForm();
+                >
+                  <UserCheck
+                    size={32}
+                    color={
+                      bookingType === "walk_in"
+                        ? "var(--secondary)"
+                        : "var(--text-muted)"
+                    }
+                  />
+                  {t("walkIn", pref)}
+                  {bookingType === "walk_in" && (
+                    <span
+                      style={{
+                        fontSize: "0.7rem",
+                        color: "var(--text-muted)",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {t("patientIsPresent", pref)}
+                    </span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBookingType("phone")}
+                  style={{
+                    flex: 1,
+                    padding: "1.5rem",
+                    borderRadius: "1.25rem",
+                    border: `3px solid ${bookingType === "phone" ? "var(--secondary)" : "var(--border)"}`,
+                    backgroundColor:
+                      bookingType === "phone"
+                        ? "rgba(16, 185, 129, 0.05)"
+                        : "var(--surface)",
+                    color: "var(--text-main)",
+                    fontWeight: 800,
+                    fontSize: "1.1rem",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    cursor: "pointer",
                   }}
-                />
+                >
+                  <Phone
+                    size={32}
+                    color={
+                      bookingType === "phone"
+                        ? "var(--secondary)"
+                        : "var(--text-muted)"
+                    }
+                  />
+                  {t("phoneBooking", pref)}
+                  {bookingType === "phone" && (
+                    <span
+                      style={{
+                        fontSize: "0.7rem",
+                        color: "var(--text-muted)",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {t("futureAppointment", pref)}
+                    </span>
+                  )}
+                </button>
               </div>
             </div>
 
-            {/* SEARCH */}
+            {/* SEARCH PATIENT */}
             <div className="form-group" style={{ marginBottom: "2.5rem" }}>
               <label
                 className="form-label"
@@ -931,10 +1035,9 @@ function QueueContent() {
               </div>
             )}
 
-            {/* STEP 4/5: DOCTOR & SLOT SELECTION */}
-            {(selectedPatient || isNewPatient) && (
-              <form
-                onSubmit={handleAddToken}
+            {/* STEP 3/4: DOCTOR & SLOT SELECTION (Only for Phone Booking) */}
+            {(selectedPatient || isNewPatient) && bookingType === "phone" && (
+              <div
                 className="animate-fade-in"
                 style={{
                   display: "flex",
@@ -949,9 +1052,57 @@ function QueueContent() {
                       fontWeight: 800,
                       fontSize: "0.75rem",
                       color: "var(--text-muted)",
+                      letterSpacing: "0.1em",
+                      marginBottom: "1rem",
                     }}
                   >
-                    4. {t("availableSlots", pref).toUpperCase()}
+                    3. {t("appointmentDate", pref).toUpperCase()}
+                  </label>
+                  <div style={{ position: "relative" }}>
+                    <Calendar
+                      size={18}
+                      style={{
+                        position: "absolute",
+                        left: "1.25rem",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        opacity: 0.5,
+                      }}
+                    />
+                    <input
+                      type="date"
+                      className="form-input"
+                      style={{
+                        paddingLeft: "3.5rem",
+                        height: "4rem",
+                        fontSize: "1.125rem",
+                        color: "var(--text-main)",
+                        backgroundColor: "var(--surface)",
+                        borderRadius: "1.25rem",
+                        fontWeight: 800,
+                      }}
+                      value={selectedDate}
+                      onChange={(e) => {
+                        setSelectedDate(e.target.value);
+                        setBookingScheduleId("");
+                        setAppointmentTime("");
+                      }}
+                      min={getTodayDate()}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label
+                    className="form-label"
+                    style={{
+                      fontWeight: 800,
+                      fontSize: "0.75rem",
+                      color: "var(--text-muted)",
+                      letterSpacing: "0.1em",
+                    }}
+                  >
+                    4. {t("selectDoctor", pref).toUpperCase()}
                   </label>
                   <select
                     className="form-select shadow-sm"
@@ -965,141 +1116,171 @@ function QueueContent() {
                       color: "var(--text-main)",
                       backgroundColor: "var(--surface)",
                     }}
-                    value={selectedScheduleId}
-                    onChange={(e) => setSelectedScheduleId(e.target.value)}
+                    value={bookingScheduleId}
+                    onChange={(e) => {
+                      setBookingScheduleId(e.target.value);
+                      setAppointmentTime("");
+                    }}
                   >
-                    {schedules.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        Dr. {s.doctors?.name}
+                    {schedules.length > 0 ? (
+                      schedules.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          Dr. {s.doctors?.name}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>
+                        {t("noSchedulesForDate", pref)}
                       </option>
-                    ))}
+                    )}
                   </select>
-
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(4, 1fr)",
-                      gap: "0.875rem",
-                      maxHeight: "200px",
-                      overflowY: "auto",
-                      padding: "0.5rem",
-                    }}
-                  >
-                    {generateSlots().map((slot) => (
-                      <button
-                        key={slot.time}
-                        type="button"
-                        disabled={slot.booked}
-                        onClick={() => setAppointmentTime(slot.time)}
-                        style={{
-                          padding: "1rem 0",
-                          fontSize: "0.9rem",
-                          borderRadius: "1.25rem",
-                          border: "1px solid var(--border)",
-                          backgroundColor: slot.booked
-                            ? "var(--background)"
-                            : appointmentTime === slot.time
-                              ? "var(--primary)"
-                              : "var(--surface)",
-                          color: slot.booked
-                            ? "var(--text-muted)"
-                            : appointmentTime === slot.time
-                              ? "white"
-                              : "var(--text-main)",
-                          cursor: slot.booked ? "not-allowed" : "pointer",
-                          fontWeight: 900,
-                        }}
-                      >
-                        {slot.time}
-                      </button>
-                    ))}
-                  </div>
                 </div>
 
-                <div className="form-group">
-                  <label
-                    className="form-label"
-                    style={{
-                      fontWeight: 800,
-                      fontSize: "0.75rem",
-                      color: "var(--text-muted)",
-                    }}
-                  >
-                    5. {t("bookingType", pref).toUpperCase()}
-                  </label>
-                  <div style={{ display: "flex", gap: "0.75rem" }}>
-                    <button
-                      type="button"
-                      onClick={() => setBookingType("walk_in")}
+                {bookingSchedule && (
+                  <div className="form-group">
+                    <label
+                      className="form-label"
                       style={{
-                        flex: 1,
-                        padding: "1rem",
-                        borderRadius: "1rem",
-                        border: `2px solid ${bookingType === "walk_in" ? "var(--secondary)" : "var(--border)"}`,
-                        backgroundColor:
-                          bookingType === "walk_in"
-                            ? "rgba(16, 185, 129, 0.05)"
-                            : "var(--surface)",
-                        color: "var(--text-main)",
                         fontWeight: 800,
-                        fontSize: "0.9rem",
+                        fontSize: "0.75rem",
+                        color: "var(--text-muted)",
+                        letterSpacing: "0.1em",
                       }}
                     >
-                      {t("walkIn", pref)}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setBookingType("phone")}
+                      5. {t("availableSlots", pref).toUpperCase()}
+                    </label>
+                    <div
                       style={{
-                        flex: 1,
-                        padding: "1rem",
-                        borderRadius: "1rem",
-                        border: `2px solid ${bookingType === "phone" ? "var(--secondary)" : "var(--border)"}`,
-                        backgroundColor:
-                          bookingType === "phone"
-                            ? "rgba(16, 185, 129, 0.05)"
-                            : "var(--surface)",
-                        color: "var(--text-main)",
-                        fontWeight: 800,
-                        fontSize: "0.9rem",
+                        display: "grid",
+                        gridTemplateColumns: "repeat(4, 1fr)",
+                        gap: "0.875rem",
+                        maxHeight: "200px",
+                        overflowY: "auto",
+                        padding: "0.5rem",
                       }}
                     >
-                      {t("phoneBooking", pref)}
-                    </button>
+                      {generateSlots(bookingSchedule).map((slot) => (
+                        <button
+                          key={slot.time}
+                          type="button"
+                          disabled={slot.booked}
+                          onClick={() => setAppointmentTime(slot.time)}
+                          style={{
+                            padding: "1rem 0",
+                            fontSize: "0.9rem",
+                            borderRadius: "1.25rem",
+                            border: "1px solid var(--border)",
+                            backgroundColor: slot.booked
+                              ? "var(--background)"
+                              : appointmentTime === slot.time
+                                ? "var(--primary)"
+                                : "var(--surface)",
+                            color: slot.booked
+                              ? "var(--text-muted)"
+                              : appointmentTime === slot.time
+                                ? "white"
+                                : "var(--text-main)",
+                            cursor: slot.booked ? "not-allowed" : "pointer",
+                            fontWeight: 900,
+                          }}
+                        >
+                          {slot.time}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
+              </div>
+            )}
 
-                <button
-                  type="submit"
-                  className="btn btn-primary"
+            {/* STEP 3/4: SELECT SCHEDULE (For Walk-in - Today Only) */}
+            {(selectedPatient || isNewPatient) && bookingType === "walk_in" && (
+              <div className="form-group">
+                <label
+                  className="form-label"
                   style={{
-                    padding: "1.75rem",
-                    width: "100%",
-                    fontSize: "1.75rem",
-                    fontWeight: 950,
-                    borderRadius: "2rem",
-                    display: "flex",
-                    gap: "1rem",
-                    justifyContent: "center",
-                    alignItems: "center",
+                    fontWeight: 800,
+                    fontSize: "0.75rem",
+                    color: "var(--text-muted)",
+                    letterSpacing: "0.1em",
                   }}
-                  disabled={
-                    addingToken ||
-                    !selectedScheduleId ||
-                    (isNewPatient && !phoneValidForNew)
-                  }
                 >
-                  {addingToken ? (
-                    <Loader2 size={36} className="animate-spin" />
+                  3. {t("selectDoctor", pref).toUpperCase()}
+                </label>
+                <select
+                  className="form-select shadow-sm"
+                  style={{
+                    height: "4.5rem",
+                    marginBottom: "1.5rem",
+                    borderRadius: "1.5rem",
+                    border: "3px solid var(--primary)",
+                    fontSize: "1.25rem",
+                    fontWeight: 900,
+                    color: "var(--text-main)",
+                    backgroundColor: "var(--surface)",
+                  }}
+                  value={bookingScheduleId}
+                  onChange={(e) => setBookingScheduleId(e.target.value)}
+                >
+                  {todaysSchedules.length > 0 ? (
+                    todaysSchedules.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        Dr. {s.doctors?.name} - {s.start_time.slice(0, 5)} to{" "}
+                        {s.end_time.slice(0, 5)}
+                      </option>
+                    ))
                   ) : (
-                    <>
-                      {" "}
-                      {t("generateToken", pref).toUpperCase()}{" "}
-                      <CheckCircle2 size={36} />
-                    </>
+                    <option value="" disabled>
+                      {t("noSchedulesForToday", pref)}
+                    </option>
                   )}
-                </button>
-              </form>
+                </select>
+                <p
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "var(--text-muted)",
+                    fontStyle: "italic",
+                  }}
+                >
+                  {t("walkInForTodayOnly", pref)}
+                </p>
+              </div>
+            )}
+
+            {/* SUBMIT BUTTON */}
+            {(selectedPatient || isNewPatient) && bookingScheduleId && (
+              <button
+                type="submit"
+                onClick={handleAddToken}
+                className="btn btn-primary"
+                style={{
+                  padding: "1.75rem",
+                  width: "100%",
+                  fontSize: "1.75rem",
+                  fontWeight: 950,
+                  borderRadius: "2rem",
+                  display: "flex",
+                  gap: "1rem",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+                disabled={
+                  addingToken ||
+                  !bookingScheduleId ||
+                  (isNewPatient && !phoneValidForNew) ||
+                  (bookingType === "phone" && !appointmentTime)
+                }
+              >
+                {addingToken ? (
+                  <Loader2 size={36} className="animate-spin" />
+                ) : (
+                  <>
+                    {" "}
+                    {t("generateToken", pref).toUpperCase()}{" "}
+                    <CheckCircle2 size={36} />
+                  </>
+                )}
+              </button>
             )}
           </div>
         </div>
@@ -1191,7 +1372,7 @@ function QueueContent() {
                   fontSize: "1.5rem",
                   fontWeight: 900,
                   color: "var(--text-main)",
-                  marginBottom: "1rem",
+                  marginBottom: "0.75rem",
                 }}
               >
                 {selectedToken.patients?.name}
@@ -1199,10 +1380,24 @@ function QueueContent() {
               <div
                 style={{
                   display: "flex",
-                  gap: "1rem",
+                  alignItems: "center",
+                  gap: "0.75rem",
                   fontSize: "0.9rem",
                   color: "var(--text-muted)",
                   fontWeight: 700,
+                  marginBottom: "1rem",
+                }}
+              >
+                <Phone size={16} color="var(--primary)" />
+                {selectedToken.patients?.phone}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "0.75rem",
+                  fontSize: "0.85rem",
+                  color: "var(--text-muted)",
+                  fontWeight: 600,
                 }}
               >
                 <span>
@@ -1264,14 +1459,32 @@ function QueueContent() {
                   backgroundColor: "#25D366",
                   color: "white",
                   fontWeight: 800,
-                  fontSize: "1.1rem",
+                  fontSize: "1.05rem",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   gap: "0.75rem",
                 }}
               >
-                <MessageCircle size={22} /> {t("shareViaWhatsApp", pref)}
+                <MessageCircle size={22} />
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                  }}
+                >
+                  <span>{t("shareViaWhatsApp", pref)}</span>
+                  <span
+                    style={{
+                      fontSize: "0.75rem",
+                      fontWeight: 600,
+                      opacity: 0.9,
+                    }}
+                  >
+                    Opens chat with {selectedToken.patients?.name}
+                  </span>
+                </div>
               </button>
 
               <button
