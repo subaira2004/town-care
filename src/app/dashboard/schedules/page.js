@@ -346,44 +346,21 @@ export default function SchedulesPage() {
   }
 
   return (
-    <div className="animate-fade-in">
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "3rem",
-          flexWrap: "wrap",
-          gap: "1.5rem",
-        }}
-      >
+    <div className="animate-fade-in schedules-page">
+      <div className="schedules-header">
         <div>
-          <h1
-            style={{
-              fontSize: "2.5rem",
-              fontWeight: 950,
-              color: "var(--text-main)",
-              marginBottom: "0.5rem",
-            }}
-          >
-            {t("schedules", pref)}
-          </h1>
-          <p style={{ color: "var(--text-muted)", fontWeight: 600 }}>
+          <h1 className="schedules-title">{t("schedules", pref)}</h1>
+          <p className="schedules-date">
             {new Date(selectedDate).toLocaleDateString(
               pref === "ta" ? "ta-IN" : "en-IN",
               { month: "long", day: "numeric", year: "numeric" },
             )}
           </p>
         </div>
-        <div style={{ display: "flex", gap: "1rem" }}>
+        <div className="schedules-actions">
           <input
             type="date"
-            className="form-input"
-            style={{
-              width: "auto",
-              borderRadius: "1rem",
-              border: "2px solid var(--primary)",
-            }}
+            className="date-picker"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
           />
@@ -393,37 +370,24 @@ export default function SchedulesPage() {
               setShowForm(true);
             }}
             className="btn btn-primary"
-            style={{
-              display: "flex",
-              gap: "0.5rem",
-              alignItems: "center",
-              borderRadius: "1rem",
-            }}
           >
             <Plus size={20} /> {t("newSession", pref)}
           </button>
         </div>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-          gap: "2rem",
-        }}
-      >
+      <div className="schedules-grid">
         {schedules.length === 0 ? (
           <div
             className="card glass-panel"
             style={{
-              gridColumn: "1 / -1",
-              padding: "6rem",
+              padding: "3rem 1.5rem",
               textAlign: "center",
               opacity: 0.6,
             }}
           >
-            <Calendar size={64} style={{ margin: "0 auto 1.5rem" }} />
-            <div style={{ fontSize: "1.5rem", fontWeight: 800 }}>
+            <Calendar size={56} style={{ margin: "0 auto 1.5rem" }} />
+            <div style={{ fontSize: "1.25rem", fontWeight: 800 }}>
               {t("noSchedules", pref)}
             </div>
           </div>
@@ -431,36 +395,14 @@ export default function SchedulesPage() {
           schedules.map((s) => (
             <div
               key={s.id}
-              className="card glass-panel animate-fade-in"
-              style={{ padding: "2rem", border: "1px solid var(--border)" }}
+              className="schedule-card card glass-panel animate-fade-in"
             >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  marginBottom: "1.5rem",
-                }}
-              >
+              <div className="schedule-card-header">
                 <div>
-                  <h3
-                    style={{
-                      fontSize: "1.5rem",
-                      fontWeight: 900,
-                      marginBottom: "0.25rem",
-                    }}
-                  >
+                  <h3 className="schedule-doctor-name">
                     Dr. {s.doctors?.name}
                   </h3>
-                  <div
-                    style={{
-                      color: "var(--primary)",
-                      fontWeight: 800,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.4rem",
-                    }}
-                  >
+                  <div className="schedule-time">
                     <Clock size={16} /> {s.start_time.slice(0, 5)} -{" "}
                     {s.end_time.slice(0, 5)}
                   </div>
@@ -472,44 +414,22 @@ export default function SchedulesPage() {
                       fetchInitialData();
                     }
                   }}
-                  className="btn btn-outline"
-                  style={{ color: "var(--danger)", padding: "0.5rem" }}
+                  className="btn schedule-delete-btn"
                 >
                   <Trash2 size={18} />
                 </button>
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  backgroundColor: "var(--background)",
-                  padding: "1rem",
-                  borderRadius: "1rem",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: "0.8rem",
-                    color: "var(--text-muted)",
-                    fontWeight: 700,
-                  }}
-                >
+              <div className="schedule-info">
+                <div className="schedule-info-label">
                   {t("avgConsultation", pref).toUpperCase()}
                 </div>
-                <div style={{ fontWeight: 900, color: "var(--text-main)" }}>
+                <div className="schedule-info-value">
                   {s.avg_consultation_minutes} {t("minutes", pref)}
                 </div>
               </div>
               <Link
                 href={`/dashboard/queue?schedule=${s.id}`}
-                className="btn btn-primary"
-                style={{
-                  width: "100%",
-                  marginTop: "1.5rem",
-                  padding: "1rem",
-                  fontWeight: 800,
-                }}
+                className="btn btn-primary schedule-manage-btn"
               >
                 {t("manageQueue", pref).toUpperCase()}
               </Link>

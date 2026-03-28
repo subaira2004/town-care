@@ -74,27 +74,13 @@ export default function DashboardPage() {
     );
 
   return (
-    <div className="animate-fade-in" style={{ paddingBottom: "4rem" }}>
-      <div style={{ marginBottom: "3rem" }}>
-        <h1
-          style={{
-            fontSize: "2.5rem",
-            fontWeight: "900",
-            color: "var(--text-main)",
-            marginBottom: "0.5rem",
-          }}
-        >
-          {pharmacy?.name}
-        </h1>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            color: "var(--text-muted)",
-            fontSize: "1.1rem",
-          }}
-        >
+    <div
+      className="animate-fade-in dashboard-page"
+      style={{ paddingBottom: "4rem" }}
+    >
+      <div className="dashboard-header" style={{ marginBottom: "2rem" }}>
+        <h1 className="pharmacy-name">{pharmacy?.name}</h1>
+        <div className="dashboard-date">
           <Calendar size={20} color="var(--primary)" />
           <span>
             {new Date().toLocaleDateString(pref === "ta" ? "ta-IN" : "en-IN", {
@@ -106,17 +92,17 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div>
+      <div className="sessions-section">
         {activeSessions.length === 0 ? (
           <div
             className="card glass-panel"
             style={{
-              padding: "5rem",
+              padding: "3rem 1.5rem",
               textAlign: "center",
             }}
           >
             <Calendar
-              size={64}
+              size={56}
               style={{
                 opacity: 0.1,
                 margin: "0 auto 1.5rem",
@@ -125,7 +111,7 @@ export default function DashboardPage() {
             />
             <h2
               style={{
-                fontSize: "1.5rem",
+                fontSize: "1.25rem",
                 color: "var(--text-main)",
                 marginBottom: "1.5rem",
               }}
@@ -137,22 +123,9 @@ export default function DashboardPage() {
             </Link>
           </div>
         ) : (
-          <div className="card glass-panel" style={{ overflow: "hidden" }}>
-            {/* Table Header */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "2fr 1.5fr 1.5fr 1fr 1fr 1.5fr",
-                padding: "1.25rem 1.5rem",
-                backgroundColor: "var(--background)",
-                borderBottom: "1px solid var(--border)",
-                fontWeight: 800,
-                fontSize: "0.75rem",
-                color: "var(--text-muted)",
-                letterSpacing: "0.05em",
-                textTransform: "uppercase",
-              }}
-            >
+          <div className="card glass-panel sessions-table-container">
+            {/* Table Header - Hidden on mobile */}
+            <div className="table-header">
               <div>Doctor</div>
               <div>Status</div>
               <div>Current Token</div>
@@ -162,7 +135,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Table Body */}
-            <div style={{ display: "flex", flexDirection: "column" }}>
+            <div className="table-body">
               {activeSessions.map((session, index) => {
                 const waiting =
                   session.tokens?.filter((t) => t.status === "waiting") || [];
@@ -173,235 +146,105 @@ export default function DashboardPage() {
                   session.tokens?.filter((t) => t.status === "completed") || [];
 
                 return (
-                  <div
-                    key={session.id}
-                    className="animate-fade-in"
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "2fr 1.5fr 1.5fr 1fr 1fr 1.5fr",
-                      padding: "1.25rem 1.5rem",
-                      alignItems: "center",
-                      borderBottom:
-                        index < activeSessions.length - 1
-                          ? "1px solid var(--border)"
-                          : "none",
-                      backgroundColor:
-                        index % 2 === 0
-                          ? "var(--surface)"
-                          : "var(--background)",
-                    }}
-                  >
+                  <div key={session.id} className="table-row animate-fade-in">
                     {/* Doctor */}
-                    <div>
-                      <div
-                        style={{
-                          fontWeight: 800,
-                          fontSize: "1.1rem",
-                          color: "var(--text-main)",
-                        }}
-                      >
+                    <div className="table-cell doctor-cell">
+                      <div className="doctor-name">
                         Dr. {session.doctors?.name}
                       </div>
-                      <div
-                        style={{
-                          fontSize: "0.85rem",
-                          color: "var(--text-muted)",
-                        }}
-                      >
+                      <div className="doctor-specialty">
                         {session.doctors?.specialty || t("none", pref)}
                       </div>
                     </div>
 
                     {/* Status */}
-                    <div>
+                    <div className="table-cell status-cell">
                       <div
                         className={`badge badge-${
                           active ? "active" : "waiting"
                         }`}
-                        style={{
-                          fontSize: "0.7rem",
-                          padding: "0.5rem 0.75rem",
-                          fontWeight: 800,
-                        }}
                       >
                         {active ? t("liveSession", pref) : t("offline", pref)}
                       </div>
                     </div>
 
                     {/* Current Token */}
-                    <div>
+                    <div className="table-cell current-token-cell">
                       {active ? (
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "0.75rem",
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: "36px",
-                              height: "36px",
-                              borderRadius: "50%",
-                              backgroundColor: "var(--secondary)",
-                              color: "white",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontWeight: 800,
-                              fontSize: "0.9rem",
-                            }}
-                          >
+                        <div className="token-info">
+                          <div className="token-badge current">
                             {active.token_number}
                           </div>
-                          <div>
-                            <div
-                              style={{
-                                fontSize: "0.7rem",
-                                color: "var(--text-muted)",
-                                fontWeight: 700,
-                              }}
-                            >
+                          <div className="token-details">
+                            <div className="token-label">
                               {t("insideWithDoctor", pref)}
                             </div>
-                            <div
-                              style={{
-                                fontSize: "0.8rem",
-                                color: "var(--text-main)",
-                                fontWeight: 600,
-                              }}
-                            >
+                            <div className="token-patient-name">
                               {active.patients?.name}
                             </div>
                           </div>
                         </div>
                       ) : (
-                        <div
-                          style={{
-                            fontSize: "0.85rem",
-                            color: "var(--text-muted)",
-                            fontStyle: "italic",
-                          }}
-                        >
+                        <div className="waiting-text">
                           {t("waiting", pref)}...
                         </div>
                       )}
                     </div>
 
                     {/* Next Token */}
-                    <div>
+                    <div className="table-cell next-token-cell">
                       {waiting.length > 0 ? (
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "0.75rem",
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: "32px",
-                              height: "32px",
-                              borderRadius: "50%",
-                              backgroundColor: "var(--primary)",
-                              color: "white",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontWeight: 800,
-                              fontSize: "0.8rem",
-                            }}
-                          >
+                        <div className="token-info">
+                          <div className="token-badge next">
                             {waiting[0].token_number}
                           </div>
-                          <div
-                            style={{
-                              fontSize: "0.8rem",
-                              color: "var(--text-main)",
-                              fontWeight: 600,
-                            }}
-                          >
+                          <div className="token-patient-name">
                             {waiting[0].patients?.name}
                           </div>
                         </div>
                       ) : (
-                        <div
-                          style={{
-                            fontSize: "0.85rem",
-                            color: "var(--text-muted)",
-                            fontStyle: "italic",
-                          }}
-                        >
-                          --
-                        </div>
+                        <div className="waiting-text">--</div>
                       )}
                     </div>
 
                     {/* Waiting Count */}
-                    <div>
-                      <div
-                        style={{
-                          fontSize: "1.25rem",
-                          fontWeight: 900,
-                          color: "var(--text-main)",
-                        }}
-                      >
-                        {waiting.length}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: "0.65rem",
-                          color: "var(--text-muted)",
-                          fontWeight: 800,
-                        }}
-                      >
+                    <div className="table-cell waiting-cell">
+                      <div className="waiting-count">{waiting.length}</div>
+                      <div className="waiting-label">
                         {t("waitingPatients", pref)}
                       </div>
                     </div>
 
                     {/* Actions */}
-                    <div style={{ display: "flex", gap: "0.5rem" }}>
-                      {!active && waiting.length > 0 && (
-                        <button
-                          onClick={() =>
-                            updateStatus(waiting[0].id, "in_consultation")
-                          }
-                          className="btn btn-primary btn-sm"
-                          style={{
-                            padding: "0.5rem 0.75rem",
-                            fontSize: "0.8rem",
-                            fontWeight: 700,
-                          }}
-                          title={t("startConsultation", pref)}
+                    <div className="table-cell actions-cell">
+                      <div className="actions-group">
+                        {!active && waiting.length > 0 && (
+                          <button
+                            onClick={() =>
+                              updateStatus(waiting[0].id, "in_consultation")
+                            }
+                            className="btn btn-primary btn-sm"
+                            title={t("startConsultation", pref)}
+                          >
+                            <Play size={16} />
+                          </button>
+                        )}
+                        {active && (
+                          <button
+                            onClick={() => updateStatus(active.id, "completed")}
+                            className="btn btn-secondary btn-sm"
+                            title={t("completeToken", pref)}
+                          >
+                            <CheckCircle2 size={16} />
+                          </button>
+                        )}
+                        <Link
+                          href={`/dashboard/queue?schedule=${session.id}`}
+                          className="btn btn-outline btn-sm"
                         >
-                          <Play size={16} />
-                        </button>
-                      )}
-                      {active && (
-                        <button
-                          onClick={() => updateStatus(active.id, "completed")}
-                          className="btn btn-secondary btn-sm"
-                          style={{
-                            padding: "0.5rem 0.75rem",
-                            fontSize: "0.8rem",
-                            fontWeight: 700,
-                          }}
-                          title={t("completeToken", pref)}
-                        >
-                          <CheckCircle2 size={16} />
-                        </button>
-                      )}
-                      <Link
-                        href={`/dashboard/queue?schedule=${session.id}`}
-                        className="btn btn-outline btn-sm"
-                        style={{
-                          padding: "0.5rem 0.75rem",
-                          fontSize: "0.8rem",
-                          fontWeight: 700,
-                        }}
-                      >
-                        {t("manageQueue", pref)}
-                      </Link>
+                          {t("manageQueue", pref)}
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 );
@@ -411,79 +254,37 @@ export default function DashboardPage() {
         )}
       </div>
 
-      <div style={{ marginTop: "5rem" }}>
+      <div className="quick-shortcuts" style={{ marginTop: "3rem" }}>
         <h2
           style={{
-            fontSize: "1.5rem",
+            fontSize: "1.25rem",
             fontWeight: 900,
             color: "var(--text-main)",
-            marginBottom: "2rem",
+            marginBottom: "1.5rem",
           }}
         >
           {t("quickShortcuts", pref)}
         </h2>
-        <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
+        <div className="shortcuts-grid">
           <Link
             href="/dashboard/queue"
-            className="card glass-panel"
-            style={{
-              flex: "1 1 250px",
-              padding: "2rem",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "1rem",
-              textAlign: "center",
-            }}
+            className="card glass-panel shortcut-card"
           >
-            <div
-              style={{
-                backgroundColor: "rgba(79, 70, 229, 0.1)",
-                padding: "1rem",
-                borderRadius: "1rem",
-              }}
-            >
+            <div className="shortcut-icon">
               <Users size={32} color="var(--primary)" />
             </div>
-            <span
-              style={{
-                fontWeight: 800,
-                color: "var(--text-main)",
-                fontSize: "1.1rem",
-              }}
-            >
+            <span className="shortcut-label">
               {t("issueToken", pref).toUpperCase()}
             </span>
           </Link>
           <Link
             href="/dashboard/schedules"
-            className="card glass-panel"
-            style={{
-              flex: "1 1 250px",
-              padding: "2rem",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "1rem",
-              textAlign: "center",
-            }}
+            className="card glass-panel shortcut-card"
           >
-            <div
-              style={{
-                backgroundColor: "rgba(16, 185, 129, 0.1)",
-                padding: "1rem",
-                borderRadius: "1rem",
-              }}
-            >
+            <div className="shortcut-icon secondary">
               <Calendar size={32} color="var(--secondary)" />
             </div>
-            <span
-              style={{
-                fontWeight: 800,
-                color: "var(--text-main)",
-                fontSize: "1.1rem",
-              }}
-            >
+            <span className="shortcut-label">
               {t("planSessions", pref).toUpperCase()}
             </span>
           </Link>
