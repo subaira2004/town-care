@@ -393,85 +393,36 @@ function QueueContent() {
                 tokens.map((token) => (
                   <div
                     key={token.id}
-                    className="animate-fade-in"
+                    className="token-card animate-fade-in"
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      padding: "1.75rem",
-                      border: "1px solid var(--border)",
-                      borderRadius: "1.25rem",
-                      marginBottom: "1.25rem",
                       backgroundColor:
                         token.status === "in_consultation"
                           ? "rgba(79, 70, 229, 0.05)"
                           : "var(--surface)",
                     }}
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "1.75rem",
-                      }}
-                    >
+                    <div className="token-card-content">
                       <div
+                        className="token-number-badge"
                         style={{
-                          width: "60px",
-                          height: "60px",
-                          borderRadius: "50%",
                           backgroundColor:
                             token.status === "completed"
                               ? "var(--text-muted)"
                               : "var(--primary)",
-                          color: "white",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontWeight: "900",
-                          fontSize: "1.75rem",
                         }}
                       >
                         {token.token_number}
                       </div>
-                      <div>
-                        <div
-                          style={{
-                            fontWeight: 900,
-                            fontSize: "1.5rem",
-                            color: "var(--text-main)",
-                          }}
-                        >
+                      <div className="token-card-info">
+                        <div className="token-card-name">
                           {token.patients?.name}
                         </div>
-                        <div
-                          style={{
-                            fontSize: "1rem",
-                            color: "var(--text-muted)",
-                            display: "flex",
-                            gap: "1.5rem",
-                            marginTop: "0.5rem",
-                            fontWeight: 700,
-                          }}
-                        >
-                          <span
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "0.4rem",
-                            }}
-                          >
+                        <div className="token-card-meta">
+                          <span className="token-card-phone">
                             <Phone size={14} /> {token.patients?.phone}
                           </span>
                           {token.appointment_time && (
-                            <span
-                              style={{
-                                color: "var(--secondary)",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "0.4rem",
-                              }}
-                            >
+                            <span className="token-card-time">
                               <Clock size={16} />{" "}
                               {token.appointment_time.slice(0, 5)}
                             </span>
@@ -479,7 +430,7 @@ function QueueContent() {
                         </div>
                       </div>
                     </div>
-                    <div style={{ display: "flex", gap: "1rem" }}>
+                    <div className="token-card-actions">
                       {token.status === "waiting" && (
                         <button
                           onClick={() =>
@@ -532,67 +483,22 @@ function QueueContent() {
         </div>
 
         {/* RIGHT: SEARCH & BOOKING SIDEPANEL */}
-        <div style={{ flex: "1 1 400px" }}>
-          <div
-            className="card glass-panel shadow-2xl"
-            style={{
-              padding: "2.5rem",
-              position: "sticky",
-              top: "2.5rem",
-              border: "1px solid var(--primary-light)",
-              borderRadius: "2.5rem",
-            }}
-          >
-            <h2
-              style={{
-                fontSize: "2rem",
-                fontWeight: 950,
-                marginBottom: "2rem",
-                color: "var(--primary)",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.75rem",
-              }}
-            >
+        <div className="booking-section">
+          <div className="card glass-panel booking-panel">
+            <h2 className="booking-title">
               <UserPlus size={32} /> {t("addToken", pref)}
             </h2>
 
             {/* BOOKING TYPE - FIRST STEP */}
-            <div className="form-group" style={{ marginBottom: "2.5rem" }}>
-              <label
-                className="form-label"
-                style={{
-                  fontWeight: 800,
-                  fontSize: "0.75rem",
-                  color: "var(--text-muted)",
-                  letterSpacing: "0.1em",
-                  marginBottom: "1rem",
-                }}
-              >
+            <div className="form-group booking-form-group">
+              <label className="form-label booking-label">
                 1. {t("bookingType", pref).toUpperCase()}
               </label>
-              <div style={{ display: "flex", gap: "1rem" }}>
+              <div className="booking-type-container">
                 <button
                   type="button"
                   onClick={() => setBookingType("walk_in")}
-                  style={{
-                    flex: 1,
-                    padding: "1.5rem",
-                    borderRadius: "1.25rem",
-                    border: `3px solid ${bookingType === "walk_in" ? "var(--secondary)" : "var(--border)"}`,
-                    backgroundColor:
-                      bookingType === "walk_in"
-                        ? "rgba(16, 185, 129, 0.05)"
-                        : "var(--surface)",
-                    color: "var(--text-main)",
-                    fontWeight: 800,
-                    fontSize: "1.1rem",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    cursor: "pointer",
-                  }}
+                  className={`booking-type-btn ${bookingType === "walk_in" ? "active" : ""}`}
                 >
                   <UserCheck
                     size={32}
@@ -604,13 +510,7 @@ function QueueContent() {
                   />
                   {t("walkIn", pref)}
                   {bookingType === "walk_in" && (
-                    <span
-                      style={{
-                        fontSize: "0.7rem",
-                        color: "var(--text-muted)",
-                        fontWeight: 600,
-                      }}
-                    >
+                    <span className="booking-type-hint">
                       {t("patientIsPresent", pref)}
                     </span>
                   )}
@@ -618,24 +518,7 @@ function QueueContent() {
                 <button
                   type="button"
                   onClick={() => setBookingType("phone")}
-                  style={{
-                    flex: 1,
-                    padding: "1.5rem",
-                    borderRadius: "1.25rem",
-                    border: `3px solid ${bookingType === "phone" ? "var(--secondary)" : "var(--border)"}`,
-                    backgroundColor:
-                      bookingType === "phone"
-                        ? "rgba(16, 185, 129, 0.05)"
-                        : "var(--surface)",
-                    color: "var(--text-main)",
-                    fontWeight: 800,
-                    fontSize: "1.1rem",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    cursor: "pointer",
-                  }}
+                  className={`booking-type-btn ${bookingType === "phone" ? "active" : ""}`}
                 >
                   <Phone
                     size={32}
@@ -647,13 +530,7 @@ function QueueContent() {
                   />
                   {t("phoneBooking", pref)}
                   {bookingType === "phone" && (
-                    <span
-                      style={{
-                        fontSize: "0.7rem",
-                        color: "var(--text-muted)",
-                        fontWeight: 600,
-                      }}
-                    >
+                    <span className="booking-type-hint">
                       {t("futureAppointment", pref)}
                     </span>
                   )}
@@ -662,41 +539,15 @@ function QueueContent() {
             </div>
 
             {/* SEARCH PATIENT */}
-            <div className="form-group" style={{ marginBottom: "2.5rem" }}>
-              <label
-                className="form-label"
-                style={{
-                  fontWeight: 800,
-                  fontSize: "0.75rem",
-                  color: "var(--text-muted)",
-                  letterSpacing: "0.1em",
-                }}
-              >
+            <div className="form-group booking-form-group">
+              <label className="form-label booking-label">
                 2. {t("searchNamePhone", pref).toUpperCase()}
               </label>
-              <div style={{ position: "relative" }}>
-                <Search
-                  size={24}
-                  style={{
-                    position: "absolute",
-                    left: "1.5rem",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    color: "var(--primary)",
-                  }}
-                />
+              <div className="search-input-wrapper">
+                <Search size={24} className="search-icon" />
                 <input
                   type="text"
-                  className="form-input shadow-inner"
-                  style={{
-                    paddingLeft: "4rem",
-                    height: "4.5rem",
-                    fontSize: "1.35rem",
-                    fontWeight: 800,
-                    borderRadius: "1.5rem",
-                    color: "var(--text-main)",
-                    backgroundColor: "var(--surface)",
-                  }}
+                  className="form-input booking-search-input"
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
@@ -707,16 +558,7 @@ function QueueContent() {
                 {searchTerm.length > 0 && (
                   <button
                     onClick={resetBookingForm}
-                    style={{
-                      position: "absolute",
-                      right: "1.5rem",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                      color: "var(--text-muted)",
-                    }}
+                    className="clear-search-btn"
                   >
                     <X size={28} />
                   </button>
@@ -726,24 +568,8 @@ function QueueContent() {
 
             {/* SEARCH RESULTS */}
             {searchTerm.length >= 3 && (
-              <div
-                className="animate-fade-in"
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "1rem",
-                  marginBottom: "2.5rem",
-                }}
-              >
-                <label
-                  className="form-label"
-                  style={{
-                    fontWeight: 800,
-                    fontSize: "0.75rem",
-                    color: "var(--text-muted)",
-                    letterSpacing: "0.1em",
-                  }}
-                >
+              <div className="animate-fade-in patient-results-container">
+                <label className="patient-result-label">
                   3. {t("chooseProfile", pref).toUpperCase()}
                 </label>
                 {patientResults.map((p) => (
@@ -754,58 +580,14 @@ function QueueContent() {
                       setIsNewPatient(false);
                       setSearchTerm(p.name);
                     }}
-                    style={{
-                      width: "100%",
-                      padding: "1.5rem",
-                      borderRadius: "1.5rem",
-                      border: `3px solid ${selectedPatient?.id === p.id ? "var(--primary)" : "var(--border)"}`,
-                      backgroundColor:
-                        selectedPatient?.id === p.id
-                          ? "rgba(79, 70, 229, 0.05)"
-                          : "var(--background)",
-                      color: "var(--text-main)",
-                      textAlign: "left",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "1.5rem",
-                      cursor: "pointer",
-                    }}
+                    className={`patient-result-btn ${selectedPatient?.id === p.id ? "selected" : ""}`}
                   >
-                    <div
-                      style={{
-                        backgroundColor:
-                          selectedPatient?.id === p.id
-                            ? "var(--primary)"
-                            : "var(--surface)",
-                        color:
-                          selectedPatient?.id === p.id
-                            ? "white"
-                            : "var(--primary)",
-                        padding: "1rem",
-                        borderRadius: "1.25rem",
-                      }}
-                    >
+                    <div className="patient-icon">
                       <User size={24} />
                     </div>
-                    <div>
-                      <div
-                        style={{
-                          fontWeight: 900,
-                          fontSize: "1.35rem",
-                          color: "var(--text-main)",
-                        }}
-                      >
-                        {p.name}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: "1rem",
-                          color: "var(--text-muted)",
-                          fontWeight: 700,
-                        }}
-                      >
-                        {p.phone}
-                      </div>
+                    <div className="patient-result-info">
+                      <div className="patient-result-name">{p.name}</div>
+                      <div className="patient-result-phone">{p.phone}</div>
                     </div>
                   </button>
                 ))}
@@ -820,51 +602,16 @@ function QueueContent() {
                       phone: searchTerm.match(/\d/) ? searchTerm : "",
                     });
                   }}
-                  style={{
-                    width: "100%",
-                    padding: "1.5rem",
-                    borderRadius: "1.5rem",
-                    border: `3px dashed ${isNewPatient ? "var(--primary)" : "var(--text-muted)"}`,
-                    backgroundColor: isNewPatient
-                      ? "rgba(79, 70, 229, 0.05)"
-                      : "transparent",
-                    textAlign: "left",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "1.5rem",
-                    cursor: "pointer",
-                  }}
+                  className={`new-patient-btn ${isNewPatient ? "active" : ""}`}
                 >
-                  <div
-                    style={{
-                      backgroundColor: isNewPatient
-                        ? "var(--primary)"
-                        : "var(--surface)",
-                      color: isNewPatient ? "white" : "var(--text-muted)",
-                      padding: "1rem",
-                      borderRadius: "1.25rem",
-                    }}
-                  >
+                  <div className="patient-icon">
                     <Plus size={28} />
                   </div>
                   <div>
-                    <div
-                      style={{
-                        fontWeight: 900,
-                        color: isNewPatient
-                          ? "var(--primary)"
-                          : "var(--text-muted)",
-                        fontSize: "1.2rem",
-                      }}
-                    >
+                    <div className="new-patient-btn-title">
                       {t("addNewProfile", pref)}
                     </div>
-                    <div
-                      style={{
-                        fontSize: "0.85rem",
-                        color: "var(--text-muted)",
-                      }}
-                    >
+                    <div className="new-patient-btn-hint">
                       ({t("optional", pref)})
                     </div>
                   </div>
@@ -874,36 +621,14 @@ function QueueContent() {
 
             {/* CREATION FORM FOR NEW PATIENT */}
             {isNewPatient && (
-              <div
-                className="animate-fade-in"
-                style={{
-                  padding: "2rem",
-                  backgroundColor: "var(--background)",
-                  borderRadius: "2rem",
-                  marginBottom: "2.5rem",
-                  border: "2px solid var(--border)",
-                }}
-              >
-                <div className="form-group" style={{ marginBottom: "1.5rem" }}>
-                  <label
-                    className="form-label"
-                    style={{
-                      fontSize: "0.75rem",
-                      fontWeight: 900,
-                      color: "var(--text-muted)",
-                    }}
-                  >
+              <div className="animate-fade-in new-patient-form-container">
+                <div className="form-group">
+                  <label className="form-label">
                     {t("patientName", pref).toUpperCase()}
                   </label>
                   <input
                     type="text"
-                    className="form-input"
-                    style={{
-                      backgroundColor: "var(--surface)",
-                      color: "var(--text-main)",
-                      height: "4rem",
-                      fontSize: "1.2rem",
-                    }}
+                    className="form-input patient-name-input"
                     value={newPatientData.name}
                     onChange={(e) =>
                       setNewPatientData({
@@ -915,63 +640,24 @@ function QueueContent() {
                   />
                 </div>
                 <div className="form-group">
-                  <label
-                    className="form-label"
-                    style={{
-                      fontSize: "0.75rem",
-                      fontWeight: 900,
-                      color: "var(--text-muted)",
-                      display: "flex",
-                      justifyContent: "space-between",
-                    }}
-                  >
+                  <label className="form-label">
                     <span>{t("phone", pref).toUpperCase()}</span>
                     {newPatientData.phone && !phoneValidForNew && (
-                      <span
-                        style={{ color: "var(--danger)", fontSize: "0.65rem" }}
-                      >
+                      <span className="phone-validation-text error">
                         {t("enterTenDigits", pref)}
                       </span>
                     )}
                     {phoneValidForNew && (
-                      <span
-                        style={{
-                          color: "var(--secondary)",
-                          fontSize: "0.65rem",
-                        }}
-                      >
+                      <span className="phone-validation-text success">
                         {t("validNumber", pref)}
                       </span>
                     )}
                   </label>
-                  <div style={{ position: "relative" }}>
-                    <span
-                      style={{
-                        position: "absolute",
-                        left: "1.25rem",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        fontWeight: 900,
-                        color: "var(--primary)",
-                        opacity: 0.8,
-                      }}
-                    >
-                      +91
-                    </span>
+                  <div className="phone-input-wrapper">
+                    <span className="phone-prefix">+91</span>
                     <input
                       type="tel"
-                      className="form-input"
-                      style={{
-                        backgroundColor: "var(--surface)",
-                        color: "var(--text-main)",
-                        height: "4rem",
-                        fontSize: "1.25rem",
-                        paddingLeft: "4rem",
-                        border:
-                          newPatientData.phone && !phoneValidForNew
-                            ? "2px solid var(--danger)"
-                            : "1px solid var(--border)",
-                      }}
+                      className="form-input patient-phone-input"
                       value={newPatientData.phone}
                       onChange={(e) =>
                         setNewPatientData({
@@ -988,50 +674,16 @@ function QueueContent() {
 
             {/* STEP 3/4: DOCTOR & SLOT SELECTION (Only for Phone Booking) */}
             {(selectedPatient || isNewPatient) && bookingType === "phone" && (
-              <div
-                className="animate-fade-in"
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "2.5rem",
-                }}
-              >
+              <div className="animate-fade-in booking-phone-section">
                 <div className="form-group">
-                  <label
-                    className="form-label"
-                    style={{
-                      fontWeight: 800,
-                      fontSize: "0.75rem",
-                      color: "var(--text-muted)",
-                      letterSpacing: "0.1em",
-                      marginBottom: "1rem",
-                    }}
-                  >
+                  <label className="form-label booking-label">
                     3. {t("appointmentDate", pref).toUpperCase()}
                   </label>
-                  <div style={{ position: "relative" }}>
-                    <Calendar
-                      size={18}
-                      style={{
-                        position: "absolute",
-                        left: "1.25rem",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        opacity: 0.5,
-                      }}
-                    />
+                  <div className="date-input-wrapper">
+                    <Calendar size={18} className="date-icon" />
                     <input
                       type="date"
-                      className="form-input"
-                      style={{
-                        paddingLeft: "3.5rem",
-                        height: "4rem",
-                        fontSize: "1.125rem",
-                        color: "var(--text-main)",
-                        backgroundColor: "var(--surface)",
-                        borderRadius: "1.25rem",
-                        fontWeight: 800,
-                      }}
+                      className="form-input booking-date-input"
                       value={selectedDate}
                       onChange={(e) => {
                         setSelectedDate(e.target.value);
@@ -1044,96 +696,46 @@ function QueueContent() {
                 </div>
 
                 <div className="form-group">
-                  <label
-                    className="form-label"
-                    style={{
-                      fontWeight: 800,
-                      fontSize: "0.75rem",
-                      color: "var(--text-muted)",
-                      letterSpacing: "0.1em",
-                    }}
-                  >
+                  <label className="form-label booking-label">
                     4. {t("selectDoctor", pref).toUpperCase()}
                   </label>
-                  <select
-                    className="form-select shadow-sm"
-                    style={{
-                      height: "4.5rem",
-                      marginBottom: "1.5rem",
-                      borderRadius: "1.5rem",
-                      border: "3px solid var(--primary)",
-                      fontSize: "1.25rem",
-                      fontWeight: 900,
-                      color: "var(--text-main)",
-                      backgroundColor: "var(--surface)",
-                    }}
-                    value={bookingScheduleId}
-                    onChange={(e) => {
-                      setBookingScheduleId(e.target.value);
-                      setAppointmentTime("");
-                    }}
-                  >
-                    {schedules.length > 0 ? (
-                      schedules.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          Dr. {s.doctors?.name}
+                  <div className="doctor-select-wrapper">
+                    <select
+                      className="form-select booking-doctor-select"
+                      value={bookingScheduleId}
+                      onChange={(e) => {
+                        setBookingScheduleId(e.target.value);
+                        setAppointmentTime("");
+                      }}
+                    >
+                      {schedules.length > 0 ? (
+                        schedules.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            Dr. {s.doctors?.name}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="" disabled>
+                          {t("noSchedulesForDate", pref)}
                         </option>
-                      ))
-                    ) : (
-                      <option value="" disabled>
-                        {t("noSchedulesForDate", pref)}
-                      </option>
-                    )}
-                  </select>
+                      )}
+                    </select>
+                  </div>
                 </div>
 
                 {bookingSchedule && (
                   <div className="form-group">
-                    <label
-                      className="form-label"
-                      style={{
-                        fontWeight: 800,
-                        fontSize: "0.75rem",
-                        color: "var(--text-muted)",
-                        letterSpacing: "0.1em",
-                      }}
-                    >
+                    <label className="form-label booking-label">
                       5. {t("availableSlots", pref).toUpperCase()}
                     </label>
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(4, 1fr)",
-                        gap: "0.875rem",
-                        maxHeight: "200px",
-                        overflowY: "auto",
-                        padding: "0.5rem",
-                      }}
-                    >
+                    <div className="time-slot-grid">
                       {generateSlots(bookingSchedule).map((slot) => (
                         <button
                           key={slot.time}
                           type="button"
                           disabled={slot.booked}
                           onClick={() => setAppointmentTime(slot.time)}
-                          style={{
-                            padding: "1rem 0",
-                            fontSize: "0.9rem",
-                            borderRadius: "1.25rem",
-                            border: "1px solid var(--border)",
-                            backgroundColor: slot.booked
-                              ? "var(--background)"
-                              : appointmentTime === slot.time
-                                ? "var(--primary)"
-                                : "var(--surface)",
-                            color: slot.booked
-                              ? "var(--text-muted)"
-                              : appointmentTime === slot.time
-                                ? "white"
-                                : "var(--text-main)",
-                            cursor: slot.booked ? "not-allowed" : "pointer",
-                            fontWeight: 900,
-                          }}
+                          className={`time-slot-btn ${slot.booked ? "booked" : ""} ${appointmentTime === slot.time ? "selected" : ""}`}
                         >
                           {slot.time}
                         </button>
@@ -1147,54 +749,30 @@ function QueueContent() {
             {/* STEP 3/4: SELECT SCHEDULE (For Walk-in - Today Only) */}
             {(selectedPatient || isNewPatient) && bookingType === "walk_in" && (
               <div className="form-group">
-                <label
-                  className="form-label"
-                  style={{
-                    fontWeight: 800,
-                    fontSize: "0.75rem",
-                    color: "var(--text-muted)",
-                    letterSpacing: "0.1em",
-                  }}
-                >
+                <label className="form-label booking-label">
                   3. {t("selectDoctor", pref).toUpperCase()}
                 </label>
-                <select
-                  className="form-select shadow-sm"
-                  style={{
-                    height: "4.5rem",
-                    marginBottom: "1.5rem",
-                    borderRadius: "1.5rem",
-                    border: "3px solid var(--primary)",
-                    fontSize: "1.25rem",
-                    fontWeight: 900,
-                    color: "var(--text-main)",
-                    backgroundColor: "var(--surface)",
-                  }}
-                  value={bookingScheduleId}
-                  onChange={(e) => setBookingScheduleId(e.target.value)}
-                >
-                  {todaysSchedules.length > 0 ? (
-                    todaysSchedules.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        Dr. {s.doctors?.name} - {s.start_time.slice(0, 5)} to{" "}
-                        {s.end_time.slice(0, 5)}
+                <div className="doctor-select-wrapper">
+                  <select
+                    className="form-select booking-doctor-select"
+                    value={bookingScheduleId}
+                    onChange={(e) => setBookingScheduleId(e.target.value)}
+                  >
+                    {todaysSchedules.length > 0 ? (
+                      todaysSchedules.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          Dr. {s.doctors?.name} - {s.start_time.slice(0, 5)} to{" "}
+                          {s.end_time.slice(0, 5)}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>
+                        {t("noSchedulesForToday", pref)}
                       </option>
-                    ))
-                  ) : (
-                    <option value="" disabled>
-                      {t("noSchedulesForToday", pref)}
-                    </option>
-                  )}
-                </select>
-                <p
-                  style={{
-                    fontSize: "0.75rem",
-                    color: "var(--text-muted)",
-                    fontStyle: "italic",
-                  }}
-                >
-                  {t("walkInForTodayOnly", pref)}
-                </p>
+                    )}
+                  </select>
+                </div>
+                <p className="booking-hint">{t("walkInForTodayOnly", pref)}</p>
               </div>
             )}
 
@@ -1203,18 +781,7 @@ function QueueContent() {
               <button
                 type="submit"
                 onClick={handleAddToken}
-                className="btn btn-primary"
-                style={{
-                  padding: "1.75rem",
-                  width: "100%",
-                  fontSize: "1.75rem",
-                  fontWeight: 950,
-                  borderRadius: "2rem",
-                  display: "flex",
-                  gap: "1rem",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
+                className="btn btn-primary generate-token-btn"
                 disabled={
                   addingToken ||
                   !bookingScheduleId ||
@@ -1226,8 +793,7 @@ function QueueContent() {
                   <Loader2 size={36} className="animate-spin" />
                 ) : (
                   <>
-                    {" "}
-                    {t("generateToken", pref).toUpperCase()}{" "}
+                    {t("generateToken", pref).toUpperCase()}
                     <CheckCircle2 size={36} />
                   </>
                 )}
@@ -1240,117 +806,36 @@ function QueueContent() {
       {/* SHARE MODAL */}
       {showShareModal && selectedToken && (
         <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.6)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 100,
-            padding: "1rem",
-          }}
+          className="share-modal-overlay"
           onClick={() => setShowShareModal(false)}
         >
           <div
-            className="card glass-panel"
-            style={{
-              maxWidth: "500px",
-              width: "100%",
-              padding: "2.5rem",
-              borderRadius: "2rem",
-              animation: "fadeIn 0.2s ease-out",
-            }}
+            className="card glass-panel share-modal"
             onClick={(e) => e.stopPropagation()}
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "2rem",
-              }}
-            >
-              <h2
-                style={{
-                  fontSize: "1.5rem",
-                  fontWeight: 900,
-                  color: "var(--primary)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.75rem",
-                }}
-              >
+            <div className="share-modal-header">
+              <h2 className="share-modal-title">
                 <Share2 size={28} /> {t("shareTitle", pref)}
               </h2>
               <button
                 onClick={() => setShowShareModal(false)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "var(--text-muted)",
-                  padding: "0.5rem",
-                }}
+                className="share-modal-close"
               >
                 <X size={24} />
               </button>
             </div>
 
             {/* Token Info Summary */}
-            <div
-              style={{
-                padding: "1.5rem",
-                backgroundColor: "var(--background)",
-                borderRadius: "1.5rem",
-                marginBottom: "2rem",
-                border: "2px solid var(--primary)",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "0.75rem",
-                  color: "var(--text-muted)",
-                  fontWeight: 800,
-                  letterSpacing: "0.1em",
-                  marginBottom: "0.5rem",
-                }}
-              >
-                {t("patientName", pref)}
-              </div>
-              <div
-                style={{
-                  fontSize: "1.5rem",
-                  fontWeight: 900,
-                  color: "var(--text-main)",
-                  marginBottom: "0.75rem",
-                }}
-              >
+            <div className="share-token-info">
+              <div className="share-token-label">{t("patientName", pref)}</div>
+              <div className="share-patient-name">
                 {selectedToken.patients?.name}
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.75rem",
-                  fontSize: "0.9rem",
-                  color: "var(--text-muted)",
-                  fontWeight: 700,
-                  marginBottom: "1rem",
-                }}
-              >
+              <div className="share-phone">
                 <Phone size={16} color="var(--primary)" />
                 {selectedToken.patients?.phone}
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  gap: "0.75rem",
-                  fontSize: "0.85rem",
-                  color: "var(--text-muted)",
-                  fontWeight: 600,
-                }}
-              >
+              <div className="share-token-meta">
                 <span>
                   {t("tokenNumber", pref)}: #{selectedToken.token_number}
                 </span>
@@ -1360,112 +845,37 @@ function QueueContent() {
             </div>
 
             {/* Message Preview */}
-            <div
-              style={{
-                marginBottom: "2rem",
-              }}
-            >
-              <label
-                className="form-label"
-                style={{
-                  fontWeight: 800,
-                  fontSize: "0.75rem",
-                  color: "var(--text-muted)",
-                  letterSpacing: "0.1em",
-                  marginBottom: "0.75rem",
-                }}
-              >
+            <div className="share-message-preview">
+              <label className="share-message-label">
                 {t("shareMessage", pref) || "Message Preview"}
               </label>
-              <div
-                style={{
-                  padding: "1.25rem",
-                  backgroundColor: "var(--surface)",
-                  borderRadius: "1rem",
-                  border: "1px solid var(--border)",
-                  fontSize: "0.95rem",
-                  lineHeight: 1.6,
-                  color: "var(--text-main)",
-                  maxHeight: "200px",
-                  overflowY: "auto",
-                }}
-              >
+              <div className="share-message-text">
                 {getShareMessageForToken(selectedToken)}
               </div>
             </div>
 
             {/* Share Buttons */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "1rem",
-              }}
-            >
+            <div className="share-buttons">
               <button
                 onClick={handleWhatsAppShare}
-                className="btn"
-                style={{
-                  padding: "1.25rem",
-                  backgroundColor: "#25D366",
-                  color: "white",
-                  fontWeight: 800,
-                  fontSize: "1.05rem",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.75rem",
-                }}
+                className="btn share-btn whatsapp"
               >
                 <MessageCircle size={22} />
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                  }}
-                >
+                <div className="share-btn-text">
                   <span>{t("shareViaWhatsApp", pref)}</span>
-                  <span
-                    style={{
-                      fontSize: "0.75rem",
-                      fontWeight: 600,
-                      opacity: 0.9,
-                    }}
-                  >
+                  <span className="share-btn-hint">
                     Opens chat with {selectedToken.patients?.name}
                   </span>
                 </div>
               </button>
 
-              <button
-                onClick={handleSmsShare}
-                className="btn btn-outline"
-                style={{
-                  padding: "1.25rem",
-                  fontWeight: 800,
-                  fontSize: "1.1rem",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.75rem",
-                }}
-              >
+              <button onClick={handleSmsShare} className="btn share-btn sms">
                 <Smartphone size={22} /> {t("shareViaSms", pref)}
               </button>
 
               <button
                 onClick={handleCopyMessage}
-                className="btn btn-outline"
-                style={{
-                  padding: "1.25rem",
-                  fontWeight: 700,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.75rem",
-                  position: "relative",
-                }}
+                className="btn share-btn copy"
               >
                 <Copy size={20} />{" "}
                 {copied ? t("messageCopied", pref) : t("copyMessage", pref)}
@@ -1473,7 +883,7 @@ function QueueContent() {
                   <CheckCircle2
                     size={18}
                     color="var(--secondary)"
-                    style={{ position: "absolute", right: "1.5rem" }}
+                    className="copy-check-icon"
                   />
                 )}
               </button>

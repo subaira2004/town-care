@@ -183,6 +183,7 @@ export default function DashboardLayout({ children }) {
         <div
           className="sidebar-overlay"
           onClick={() => setIsSidebarOpen(false)}
+          aria-hidden="true"
         />
       )}
 
@@ -193,6 +194,14 @@ export default function DashboardLayout({ children }) {
         <div className="sidebar-header">
           <Activity size={28} color="var(--primary)" />
           <span className="sidebar-title">Town Care</span>
+          {/* Close button for mobile */}
+          <button
+            className="sidebar-close-btn"
+            onClick={() => setIsSidebarOpen(false)}
+            aria-label="Close menu"
+          >
+            <X size={24} />
+          </button>
         </div>
 
         <nav className="sidebar-nav">

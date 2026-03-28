@@ -82,6 +82,8 @@ html {
     font-size: 16px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    width: 100%;
 }
 
 body {
@@ -100,6 +102,25 @@ body {
     transition:
         background-color 0.3s ease,
         color 0.3s ease;
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+}
+
+/* Prevent overflow from images and preformatted text */
+img,
+video,
+iframe,
+pre,
+code,
+table {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+/* Ensure all elements respect container width */
+* {
+    max-width: 100%;
 }
 
 /* ===========================
@@ -111,6 +132,9 @@ body {
     display: flex;
     min-height: 100vh;
     background-color: var(--background);
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
 }
 
 /* Mobile Menu Toggle Button */
@@ -133,11 +157,44 @@ body {
 
 /* Sidebar Overlay (mobile only) */
 .sidebar-overlay {
-    display: none;
     position: fixed;
     inset: 0;
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 99;
+    display: block;
+}
+
+@media (min-width: 768px) {
+    .sidebar-overlay {
+        display: none !important;
+    }
+}
+
+/* Sidebar Close Button */
+.sidebar-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    background-color: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0;
+}
+
+.sidebar-close-btn:hover {
+    background-color: var(--surface-hover);
+    color: var(--text-main);
+}
+
+@media (min-width: 768px) {
+    .sidebar-close-btn {
+        display: none;
+    }
 }
 
 /* Sidebar Container */
@@ -167,6 +224,7 @@ body {
     padding: 1.25rem 1rem;
     border-bottom: 1px solid var(--border);
     height: 70px;
+    position: relative;
 }
 
 .sidebar-title {
@@ -267,6 +325,9 @@ body {
     padding: 1rem;
     margin-left: 0;
     padding-top: 4.5rem;
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
 }
 
 .main-content .container {
@@ -1643,6 +1704,8 @@ h3 {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1.5rem;
+    width: 100%;
+    max-width: 100%;
 }
 
 @media (min-width: 640px) {
@@ -1654,6 +1717,9 @@ h3 {
 .schedule-card {
     padding: 1.5rem;
     border: 1px solid var(--border);
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 .schedule-card-header {
@@ -1708,6 +1774,143 @@ h3 {
     width: 100%;
     padding: 0.875rem;
     font-weight: 800;
+}
+
+/* Schedule Form Page */
+.schedule-form-page {
+    padding: var(--spacing-md);
+    max-width: 100%;
+    margin: 0 auto;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+.back-btn {
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: auto;
+    max-width: 100%;
+}
+
+.schedule-form-card {
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+@media (min-width: 640px) {
+    .schedule-form-card {
+        padding: 2rem;
+    }
+}
+
+.schedule-form-title {
+    font-size: clamp(1.25rem, 3vw, 1.5rem);
+    font-weight: 900;
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.schedule-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.time-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    width: 100%;
+    max-width: 100%;
+}
+
+@media (min-width: 640px) {
+    .time-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+}
+
+.bulk-mode-section {
+    padding: 1.5rem;
+    background-color: var(--background);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border);
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+@media (min-width: 640px) {
+    .bulk-mode-section {
+        padding: 2rem;
+    }
+}
+
+.bulk-label {
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.days-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    width: 100%;
+    max-width: 100%;
+}
+
+.day-btn {
+    flex: 1 1 calc(33.333% - 0.5rem);
+    min-width: 0;
+    max-width: 100%;
+    padding: 0.75rem 0.5rem;
+}
+
+@media (min-width: 640px) {
+    .day-btn {
+        flex: 1 1 auto;
+        min-width: 80px;
+    }
+}
+
+.form-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    width: 100%;
+    max-width: 100%;
+}
+
+@media (min-width: 640px) {
+    .form-actions {
+        flex-direction: row;
+        gap: 1rem;
+    }
+}
+
+.mode-toggle-btn {
+    flex: 1;
+    padding: 1rem;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.save-btn {
+    flex: 2;
+    padding: 1rem;
+    font-size: 1.1rem;
+    min-width: 0;
+    max-width: 100%;
 }
 
 /* ===========================

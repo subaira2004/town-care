@@ -93,6 +93,7 @@ export default function AdminLayout({ children }) {
         <div
           className="sidebar-overlay"
           onClick={() => setIsSidebarOpen(false)}
+          aria-hidden="true"
         />
       )}
 
@@ -106,6 +107,14 @@ export default function AdminLayout({ children }) {
             <span className="sidebar-title">Town Care</span>
             <span className="sidebar-subtitle">ADMIN CONSOLE</span>
           </div>
+          {/* Close button for mobile */}
+          <button
+            className="sidebar-close-btn"
+            onClick={() => setIsSidebarOpen(false)}
+            aria-label="Close menu"
+          >
+            <X size={24} />
+          </button>
         </div>
 
         <nav className="sidebar-nav">

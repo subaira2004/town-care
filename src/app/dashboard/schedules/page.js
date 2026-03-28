@@ -134,46 +134,21 @@ export default function SchedulesPage() {
 
   if (showForm) {
     return (
-      <div
-        className="animate-fade-in"
-        style={{ maxWidth: "800px", margin: "0 auto" }}
-      >
+      <div className="animate-fade-in schedule-form-page">
         <button
           onClick={() => setShowForm(false)}
-          className="btn btn-outline"
-          style={{
-            display: "flex",
-            gap: "0.5rem",
-            alignItems: "center",
-            marginBottom: "2rem",
-          }}
+          className="btn btn-outline back-btn"
         >
           <ChevronLeft size={20} /> {t("backToCalendar", pref)}
         </button>
 
-        <div
-          className="card glass-panel shadow-xl"
-          style={{ padding: "3rem", borderRadius: "2rem" }}
-        >
-          <h1
-            style={{
-              fontSize: "2rem",
-              fontWeight: 950,
-              marginBottom: "2.5rem",
-              color: "var(--primary)",
-              display: "flex",
-              gap: "0.75rem",
-              alignItems: "center",
-            }}
-          >
+        <div className="card glass-panel schedule-form-card">
+          <h1 className="schedule-form-title">
             {bulkMode ? <Repeat size={32} /> : <Plus size={32} />}
             {bulkMode ? t("bulkSetup", pref) : t("newSession", pref)}
           </h1>
 
-          <form
-            onSubmit={handleSubmit}
-            style={{ display: "flex", flexDirection: "column", gap: "2rem" }}
-          >
+          <form onSubmit={handleSubmit} className="schedule-form">
             <div className="form-group">
               <label className="form-label">{t("selectDoctor", pref)}</label>
               <select
@@ -193,13 +168,7 @@ export default function SchedulesPage() {
               </select>
             </div>
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "1.5rem",
-              }}
-            >
+            <div className="time-grid">
               <div className="form-group">
                 <label className="form-label">{t("startTime", pref)}</label>
                 <input
@@ -227,29 +196,11 @@ export default function SchedulesPage() {
             </div>
 
             {bulkMode && (
-              <div
-                className="animate-fade-in"
-                style={{
-                  padding: "2rem",
-                  backgroundColor: "var(--background)",
-                  borderRadius: "1.5rem",
-                  border: "1px solid var(--border)",
-                }}
-              >
-                <label
-                  className="form-label"
-                  style={{ marginBottom: "1.5rem", display: "block" }}
-                >
+              <div className="bulk-mode-section animate-fade-in">
+                <label className="form-label bulk-label">
                   {t("repeatWeekly", pref)}
                 </label>
-                <div
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: "0.75rem",
-                    marginBottom: "1.5rem",
-                  }}
-                >
+                <div className="days-selector">
                   {[
                     "Monday",
                     "Tuesday",
@@ -268,8 +219,7 @@ export default function SchedulesPage() {
                           : [...formData.days, day];
                         setFormData({ ...formData, days: newDays });
                       }}
-                      className={`btn btn-sm ${formData.days.includes(day) ? "btn-primary" : "btn-outline"}`}
-                      style={{ borderRadius: "0.75rem" }}
+                      className={`btn btn-sm day-btn ${formData.days.includes(day) ? "btn-primary" : "btn-outline"}`}
                     >
                       {day.slice(0, 3)}
                     </button>
@@ -315,27 +265,17 @@ export default function SchedulesPage() {
               </div>
             )}
 
-            <div style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
+            <div className="form-actions">
               <button
                 type="button"
                 onClick={() => setBulkMode(!bulkMode)}
-                className="btn btn-outline"
-                style={{ flex: 1, padding: "1.25rem" }}
+                className="btn btn-outline mode-toggle-btn"
               >
                 {bulkMode
                   ? t("single", pref) || "Single Day"
                   : t("bulkSetup", pref)}
               </button>
-              <button
-                type="submit"
-                className="btn btn-primary shadow-lg"
-                style={{
-                  flex: 2,
-                  padding: "1.25rem",
-                  fontSize: "1.2rem",
-                  fontWeight: 800,
-                }}
-              >
+              <button type="submit" className="btn btn-primary save-btn">
                 {t("save", pref).toUpperCase()}
               </button>
             </div>
