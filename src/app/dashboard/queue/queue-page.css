@@ -1,0 +1,543 @@
+/* Queue Page - Compact Responsive Styles */
+
+/* Main container */
+.queue-container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: var(--spacing-md);
+}
+
+@media (min-width: 768px) {
+  .queue-container {
+    max-width: 1200px;
+    padding: var(--spacing-lg);
+  }
+}
+
+/* Page header */
+.queue-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.queue-title {
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: var(--spacing-xs);
+}
+
+.queue-date {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Schedule selector */
+.schedule-selector {
+  width: 100%;
+  height: 2.75rem;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--primary);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  background-color: var(--surface);
+  color: var(--text-main);
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+@media (min-width: 640px) {
+  .schedule-selector {
+    width: auto;
+    min-width: 200px;
+    height: 2.5rem;
+  }
+}
+
+/* Token cards container */
+.token-list {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.token-list-header {
+  display: none;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--background);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+@media (min-width: 768px) {
+  .token-list-header {
+    display: grid;
+    grid-template-columns: 80px 1fr 100px 120px;
+    gap: var(--spacing-md);
+  }
+}
+
+/* Individual token item */
+.token-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border);
+  background-color: var(--surface);
+}
+
+@media (min-width: 768px) {
+  .token-item {
+    display: grid;
+    grid-template-columns: 80px 1fr 100px 120px;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    align-items: center;
+  }
+}
+
+.token-item:last-child {
+  border-bottom: none;
+}
+
+.token-item.in-consultation {
+  background-color: rgba(16, 185, 129, 0.05);
+}
+
+/* Token number badge */
+.token-number {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 1.25rem;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .token-number {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+    margin: 0;
+  }
+}
+
+.token-number.completed {
+  background-color: var(--text-muted);
+}
+
+/* Token patient info */
+.token-patient {
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .token-patient {
+    text-align: left;
+  }
+}
+
+.token-patient-name {
+  font-weight: 800;
+  font-size: var(--text-base);
+  color: var(--text-main);
+  margin-bottom: var(--spacing-xs);
+}
+
+@media (min-width: 768px) {
+  .token-patient-name {
+    font-size: 0.95rem;
+  }
+}
+
+.token-patient-phone {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+}
+
+@media (min-width: 768px) {
+  .token-patient-phone {
+    font-size: 0.75rem;
+    justify-content: flex-start;
+  }
+}
+
+/* Token actions */
+.token-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .token-actions {
+    justify-content: flex-end;
+  }
+}
+
+.token-action-btn {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.token-action-btn.primary {
+  background-color: var(--primary);
+  color: white;
+}
+
+.token-action-btn.secondary {
+  background-color: var(--secondary);
+  color: white;
+}
+
+.token-action-btn.outline {
+  background-color: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-main);
+}
+
+/* Booking panel */
+.booking-panel {
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  padding: var(--spacing-lg);
+  position: sticky;
+  top: var(--spacing-md);
+}
+
+@media (min-width: 768px) {
+  .booking-panel {
+    padding: var(--spacing-xl);
+    top: var(--spacing-xl);
+  }
+}
+
+.booking-title {
+  font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+/* Booking type buttons */
+.booking-type-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.booking-type-btn {
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  border: 3px solid var(--border);
+  background-color: var(--surface-hover);
+  color: var(--text-main);
+  font-weight: 800;
+  font-size: var(--text-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.booking-type-btn.active {
+  border-color: var(--secondary);
+  background-color: rgba(16, 185, 129, 0.05);
+}
+
+.booking-type-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.booking-type-hint {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Form inputs */
+.booking-form .form-group {
+  margin-bottom: var(--spacing-md);
+}
+
+.booking-form .form-label {
+  font-size: 0.65rem;
+  margin-bottom: var(--spacing-xs);
+}
+
+.booking-form .form-input,
+.booking-form .form-select {
+  height: 2.75rem;
+  font-size: var(--text-sm);
+  border-radius: var(--radius-md);
+}
+
+/* Time slot grid */
+.time-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-sm);
+  max-height: 180px;
+  overflow-y: auto;
+  padding: var(--spacing-sm);
+}
+
+.time-slot-btn {
+  padding: var(--spacing-sm) var(--spacing-xs);
+  font-size: 0.75rem;
+  font-weight: 800;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background-color: var(--surface);
+  color: var(--text-main);
+  cursor: pointer;
+  text-align: center;
+}
+
+.time-slot-btn:disabled {
+  background-color: var(--background);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.time-slot-btn.selected {
+  background-color: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* Submit button */
+.submit-btn {
+  width: 100%;
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  background-color: var(--primary);
+  color: white;
+  font-weight: 900;
+  font-size: var(--text-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-lg);
+}
+
+.submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Share modal */
+.share-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--spacing-md);
+}
+
+.share-modal {
+  background: var(--surface);
+  border-radius: var(--radius-2xl);
+  padding: var(--spacing-lg);
+  max-width: 100%;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@media (min-width: 640px) {
+  .share-modal {
+    max-width: 450px;
+    padding: var(--spacing-xl);
+  }
+}
+
+.share-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.share-modal-title {
+  font-size: var(--text-lg);
+  font-weight: 800;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.share-modal-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  padding: var(--spacing-xs);
+  cursor: pointer;
+}
+
+/* Share token info */
+.share-token-info {
+  background-color: var(--background);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  border: 2px solid var(--primary);
+}
+
+.share-patient-name {
+  font-size: var(--text-lg);
+  font-weight: 900;
+  color: var(--text-main);
+  margin-bottom: var(--spacing-sm);
+}
+
+.share-phone {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+}
+
+.share-token-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Share buttons */
+.share-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.share-btn {
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  font-weight: 800;
+  font-size: var(--text-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.share-btn.whatsapp {
+  background-color: #25D366;
+  color: white;
+}
+
+.share-btn.sms {
+  background-color: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-main);
+}
+
+.share-btn.copy {
+  background-color: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  position: relative;
+}
+
+.share-btn-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.share-btn-hint {
+  font-size: 0.65rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: var(--spacing-2xl) var(--spacing-md);
+  opacity: 0.6;
+}
+
+.empty-state-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto var(--spacing-md);
+  color: var(--text-main);
+}
+
+.empty-state-text {
+  font-size: var(--text-lg);
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+/* Responsive layout */
+.queue-layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+@media (min-width: 1024px) {
+  .queue-layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .queue-list-section {
+    flex: 1 1 auto;
+  }
+
+  .booking-section {
+    flex: 1 1 400px;
+    max-width: 450px;
+  }
+}

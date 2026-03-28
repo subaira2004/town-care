@@ -32,6 +32,7 @@ import {
 } from "@/lib/utils";
 import { getAuthUser } from "@/app/actions/auth";
 import { t, getShareMessage, getStatusLabel } from "@/lib/i18n/translations";
+import "./queue-page.css";
 
 function QueueContent() {
   const [loading, setLoading] = useState(true);
@@ -311,35 +312,14 @@ function QueueContent() {
   const phoneValidForNew = isValidPhone(newPatientData.phone);
 
   return (
-    <div
-      className="animate-fade-in"
-      style={{ maxWidth: "1400px", margin: "0 auto" }}
-    >
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "2.5rem" }}>
+    <div className="queue-container">
+      <div className="queue-layout">
         {/* LEFT: QUEUE LIST */}
-        <div style={{ flex: "1 1 700px" }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "2.5rem",
-              flexWrap: "wrap",
-              gap: "1rem",
-            }}
-          >
+        <div className="queue-list-section">
+          <div className="queue-header">
             <div>
-              <h1
-                style={{
-                  fontSize: "2.5rem",
-                  fontWeight: "900",
-                  color: "var(--text-main)",
-                  marginBottom: "0.25rem",
-                }}
-              >
-                {t("tokenQueue", pref)}
-              </h1>
-              <p style={{ color: "var(--text-muted)", fontWeight: 600 }}>
+              <h1 className="queue-title">{t("tokenQueue", pref)}</h1>
+              <p className="queue-date">
                 {new Date(getTodayDate()).toLocaleDateString(
                   pref === "ta" ? "ta-IN" : "en-IN",
                   { weekday: "long", month: "long", day: "numeric" },
@@ -347,17 +327,7 @@ function QueueContent() {
               </p>
             </div>
             <select
-              className="form-select shadow-sm"
-              style={{
-                width: "auto",
-                minWidth: "240px",
-                height: "3.5rem",
-                borderRadius: "1rem",
-                border: "2px solid var(--primary)",
-                color: "var(--text-main)",
-                backgroundColor: "var(--surface)",
-                fontWeight: 700,
-              }}
+              className="schedule-selector"
               value={selectedScheduleId}
               onChange={(e) => setSelectedScheduleId(e.target.value)}
             >
@@ -375,13 +345,17 @@ function QueueContent() {
             </select>
           </div>
 
-          <div
-            className="card glass-panel shadow-lg"
-            style={{ padding: "0", overflow: "hidden" }}
-          >
+          <div className="token-list">
+            <div className="token-list-header">
+              <div>#</div>
+              <div>Patient</div>
+              <div>Time</div>
+              <div>Actions</div>
+            </div>
+
             <div
               style={{
-                padding: "2rem",
+                padding: "var(--spacing-md)",
                 backgroundColor: "var(--background)",
                 borderBottom: "1px solid var(--border)",
                 display: "flex",
@@ -391,8 +365,8 @@ function QueueContent() {
             >
               <div
                 style={{
-                  fontWeight: 900,
-                  fontSize: "1.75rem",
+                  fontWeight: 800,
+                  fontSize: "var(--text-lg)",
                   color: "var(--primary)",
                 }}
               >
@@ -401,42 +375,19 @@ function QueueContent() {
                   : t("selectDoctor", pref)}
               </div>
               {selectedSchedule && (
-                <div
-                  className="badge badge-active"
-                  style={{ fontSize: "1rem", padding: "0.75rem 1.5rem" }}
-                >
-                  <Clock size={18} style={{ marginRight: "0.5rem" }} />{" "}
+                <div className="badge badge-active">
+                  <Clock size={14} style={{ marginRight: "4px" }} />
                   {selectedSchedule.start_time.slice(0, 5)} -{" "}
                   {selectedSchedule.end_time.slice(0, 5)}
                 </div>
               )}
             </div>
 
-            <div style={{ padding: "2rem" }}>
+            <div>
               {tokens.length === 0 ? (
-                <div
-                  style={{
-                    textAlign: "center",
-                    padding: "6rem 1rem",
-                    opacity: 0.6,
-                  }}
-                >
-                  <Users
-                    size={72}
-                    style={{
-                      margin: "0 auto 1.5rem",
-                      color: "var(--text-main)",
-                    }}
-                  />
-                  <div
-                    style={{
-                      color: "var(--text-main)",
-                      fontSize: "1.5rem",
-                      fontWeight: 800,
-                    }}
-                  >
-                    {t("noTokens", pref)}
-                  </div>
+                <div className="empty-state">
+                  <Users className="empty-state-icon" />
+                  <div className="empty-state-text">{t("noTokens", pref)}</div>
                 </div>
               ) : (
                 tokens.map((token) => (
