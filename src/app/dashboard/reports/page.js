@@ -226,11 +226,7 @@ export default function PharmacyReportsPage() {
 
       {/* Report Content */}
       {reportType === "daily" && (
-        <DailyTokenReport
-          selectedDate={selectedDate}
-          dateRange={dateRange}
-          recordLimit={recordLimit}
-        />
+        <DailyTokenReport dateRange={dateRange} recordLimit={recordLimit} />
       )}
       {reportType === "doctor" && (
         <DoctorPerformanceReport
@@ -261,11 +257,11 @@ export default function PharmacyReportsPage() {
 // DAILY TOKEN REPORT
 // ============================================
 
-function DailyTokenReport({ selectedDate, dateRange, recordLimit }) {
+function DailyTokenReport({ dateRange, recordLimit }) {
   const supabase = createClient();
 
   const { data: report, isLoading } = useSWR(
-    `daily-token-report-${selectedDate}`,
+    `daily-token-report-${dateRange.start}-${dateRange.end}`,
     async () => {
       const user = await getAuthUser();
       if (!user) return null;
@@ -278,12 +274,15 @@ function DailyTokenReport({ selectedDate, dateRange, recordLimit }) {
 
       if (!pharmacy) return null;
 
-      // Get schedules for the selected date
+      // Get schedules for the date range
       const { data: schedules } = await supabase
         .from("schedules")
         .select("id, doctor_id, delay_minutes")
         .eq("pharmacy_id", pharmacy.id)
-        .eq("schedule_date", selectedDate);
+        .gte("schedule_date", dateRange.start)
+        .lte("schedule_date", dateRange.end)
+        .order("schedule_date", { ascending: false })
+        .limit(recordLimit);
 
       if (!schedules || schedules.length === 0) {
         return { tokens: [], summary: {}, schedules: [] };
@@ -300,7 +299,8 @@ function DailyTokenReport({ selectedDate, dateRange, recordLimit }) {
           patients (name, phone),
           schedules (
             doctor_id,
-            doctors (name)
+            doctors (name),
+            schedule_date
           )
         `,
         )
@@ -356,7 +356,7 @@ function DailyTokenReport({ selectedDate, dateRange, recordLimit }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `daily-token-report-${selectedDate}.csv`;
+    a.download = `daily-token-report-${dateRange.start}-to-${dateRange.end}.csv`;
     a.click();
   };
 
@@ -428,7 +428,8 @@ function DailyTokenReport({ selectedDate, dateRange, recordLimit }) {
           }}
         >
           <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 800 }}>
-            Token Details for {new Date(selectedDate).toLocaleDateString()}
+            Token Details ({new Date(dateRange.start).toLocaleDateString()} -{" "}
+            {new Date(dateRange.end).toLocaleDateString()})
           </h3>
           <button
             onClick={handleExportCSV}
