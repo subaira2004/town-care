@@ -21,9 +21,6 @@ import { getAuthUser } from "@/app/actions/auth";
 
 export default function PharmacyReportsPage() {
   const supabase = createClient();
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0],
-  );
   const [dateRange, setDateRange] = useState({
     start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
       .toISOString()
@@ -32,6 +29,28 @@ export default function PharmacyReportsPage() {
   });
   const [reportType, setReportType] = useState("daily");
   const [recordLimit] = useState(10000);
+  const maxDateRangeDays = 90; // Maximum 3 months
+
+  // Validate date range doesn't exceed 3 months
+  const validateDateRange = (range) => {
+    const start = new Date(range.start);
+    const end = new Date(range.end);
+    const diffDays = (end - start) / (1000 * 60 * 60 * 24);
+
+    if (diffDays > maxDateRangeDays) {
+      alert(
+        `Maximum date range is ${maxDateRangeDays} days (3 months). Please select a shorter range.`,
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const handleDateRangeChange = (newRange) => {
+    if (validateDateRange(newRange)) {
+      setDateRange(newRange);
+    }
+  };
 
   return (
     <div
@@ -126,81 +145,67 @@ export default function PharmacyReportsPage() {
           }}
         >
           <Calendar size={18} color="var(--primary)" />
-          {reportType === "daily" ? "Date:" : "Date Range:"}
+          Date Range:
         </label>
 
-        {reportType === "daily" ? (
-          <input
-            type="date"
-            className="form-input"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            style={{ maxWidth: "200px" }}
-          />
-        ) : (
-          <>
-            <input
-              type="date"
-              className="form-input"
-              value={dateRange.start}
-              onChange={(e) =>
-                setDateRange({ ...dateRange, start: e.target.value })
-              }
-              style={{ maxWidth: "160px" }}
-            />
-            <span style={{ fontWeight: 600, color: "var(--text-muted)" }}>
-              to
-            </span>
-            <input
-              type="date"
-              className="form-input"
-              value={dateRange.end}
-              onChange={(e) =>
-                setDateRange({ ...dateRange, end: e.target.value })
-              }
-              style={{ maxWidth: "160px" }}
-            />
-            <button
-              onClick={() =>
-                setDateRange({
-                  start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-                    .toISOString()
-                    .split("T")[0],
-                  end: new Date().toISOString().split("T")[0],
-                })
-              }
-              className="btn btn-outline btn-sm"
-            >
-              7D
-            </button>
-            <button
-              onClick={() =>
-                setDateRange({
-                  start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-                    .toISOString()
-                    .split("T")[0],
-                  end: new Date().toISOString().split("T")[0],
-                })
-              }
-              className="btn btn-outline btn-sm"
-            >
-              30D
-            </button>
-            <button
-              onClick={() =>
-                setDateRange({
-                  start: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
-                    .toISOString()
-                    .split("T")[0],
-                  end: new Date().toISOString().split("T")[0],
-                })
-              }
-              className="btn btn-outline btn-sm"
-            >
-              90D
-            </button>
-          </>
-        )}
+        <input
+          type="date"
+          className="form-input"
+          value={dateRange.start}
+          onChange={(e) =>
+            handleDateRangeChange({ ...dateRange, start: e.target.value })
+          }
+          style={{ maxWidth: "160px" }}
+        />
+        <span style={{ fontWeight: 600, color: "var(--text-muted)" }}>to</span>
+        <input
+          type="date"
+          className="form-input"
+          value={dateRange.end}
+          onChange={(e) =>
+            handleDateRangeChange({ ...dateRange, end: e.target.value })
+          }
+          style={{ maxWidth: "160px" }}
+        />
+        <button
+          onClick={() =>
+            handleDateRangeChange({
+              start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+                .toISOString()
+                .split("T")[0],
+              end: new Date().toISOString().split("T")[0],
+            })
+          }
+          className="btn btn-outline btn-sm"
+        >
+          7D
+        </button>
+        <button
+          onClick={() =>
+            handleDateRangeChange({
+              start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+                .toISOString()
+                .split("T")[0],
+              end: new Date().toISOString().split("T")[0],
+            })
+          }
+          className="btn btn-outline btn-sm"
+        >
+          30D
+        </button>
+        <button
+          onClick={() =>
+            handleDateRangeChange({
+              start: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
+                .toISOString()
+                .split("T")[0],
+              end: new Date().toISOString().split("T")[0],
+            })
+          }
+          className="btn btn-outline btn-sm"
+        >
+          90D
+        </button>
 
         <div
           style={{
@@ -214,7 +219,8 @@ export default function PharmacyReportsPage() {
           }}
         >
           <AlertCircle size={14} />
-          Max {recordLimit.toLocaleString()} records
+          Max {recordLimit.toLocaleString()} records • {maxDateRangeDays} days
+          max
         </div>
       </div>
 
