@@ -132,9 +132,16 @@ export default function AdminSubscriptionsPharmaciesPage() {
         type: "success",
         text: "Subscription assigned successfully!",
       });
-      mutate();
+
+      // Force close modal and reset state
       setShowAssignModal(false);
       setSelectedPharmacy(null);
+      setSelectedPlanId("");
+
+      // Force reload to ensure fresh data
+      setTimeout(() => {
+        mutate();
+      }, 100);
     } catch (error) {
       setMessage({ type: "error", text: error.message });
     }

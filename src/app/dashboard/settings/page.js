@@ -15,6 +15,7 @@ import {
   Calendar,
   TrendingUp,
   Users,
+  RefreshCw,
 } from "lucide-react";
 import { t } from "@/lib/i18n/translations";
 import { getAuthUser } from "@/app/actions/auth";
@@ -52,6 +53,12 @@ export default function SettingsPage() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const refreshData = async () => {
+    setLoading(true);
+    await fetchData();
+    setLoading(false);
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -200,10 +207,32 @@ export default function SettingsPage() {
         <div>
           {/* Subscription Status Card */}
           <div className="card glass-panel" style={{ marginBottom: "2rem" }}>
-            <h2 className="card-title">
-              <CreditCard size={20} color="var(--primary)" /> Subscription
-              Status
-            </h2>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "1rem",
+              }}
+            >
+              <h2 className="card-title" style={{ margin: 0 }}>
+                <CreditCard size={20} color="var(--primary)" /> Subscription
+                Status
+              </h2>
+              <button
+                onClick={refreshData}
+                disabled={loading}
+                className="btn btn-outline btn-sm"
+                style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+                title="Refresh subscription data"
+              >
+                <RefreshCw
+                  size={16}
+                  className={loading ? "animate-spin" : ""}
+                />
+                Refresh
+              </button>
+            </div>
 
             {subscription ? (
               <div
