@@ -13,6 +13,10 @@ import {
   Menu,
   X,
   BarChart3,
+  CreditCard,
+  FileText,
+  DollarSign,
+  Settings,
 } from "lucide-react";
 import { adminLogoutAction, getAdminUser } from "@/app/actions/auth";
 
@@ -65,12 +69,41 @@ export default function AdminLayout({ children }) {
     router.refresh();
   };
 
+  const [expandedMenu, setExpandedMenu] = useState(null);
+
   const menuItems = [
     { name: "Pharmacies", icon: <Store size={20} />, path: "/admin" },
     {
       name: "Analytics",
       icon: <BarChart3 size={20} />,
       path: "/admin/analytics",
+    },
+    {
+      name: "Subscriptions",
+      icon: <CreditCard size={20} />,
+      path: "#",
+      submenu: [
+        {
+          name: "Plans",
+          icon: <Settings size={16} />,
+          path: "/admin/subscriptions/plans",
+        },
+        {
+          name: "Pharmacies",
+          icon: <Store size={16} />,
+          path: "/admin/subscriptions/pharmacies",
+        },
+        {
+          name: "Invoices",
+          icon: <FileText size={16} />,
+          path: "/admin/subscriptions/invoices",
+        },
+        {
+          name: "Revenue",
+          icon: <DollarSign size={16} />,
+          path: "/admin/subscriptions/revenue",
+        },
+      ],
     },
     { name: "Master Towns", icon: <MapPin size={20} />, path: "/admin/towns" },
     { name: "Doctors", icon: <HeartPulse size={20} />, path: "/admin/doctors" },
@@ -120,6 +153,73 @@ export default function AdminLayout({ children }) {
         <nav className="sidebar-nav">
           {menuItems.map((item) => {
             const isActive = pathname === item.path;
+            const isExpanded = expandedMenu === item.name;
+            const hasSubmenu = item.submenu && item.submenu.length > 0;
+
+            if (hasSubmenu) {
+              return (
+                <div key={item.name}>
+                  <button
+                    onClick={() =>
+                      setExpandedMenu(isExpanded ? null : item.name)
+                    }
+                    className={`sidebar-nav-item ${isExpanded ? "active" : ""}`}
+                    style={{
+                      width: "100%",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.75rem",
+                      color: "inherit",
+                    }}
+                  >
+                    {item.icon}
+                    <span
+                      className="nav-item-text"
+                      style={{ flex: 1, textAlign: "left" }}
+                    >
+                      {item.name}
+                    </span>
+                    <span style={{ fontSize: "0.75rem" }}>
+                      {isExpanded ? "▼" : "▶"}
+                    </span>
+                  </button>
+                  {isExpanded && (
+                    <div
+                      style={{
+                        paddingLeft: "2.75rem",
+                        paddingTop: "0.5rem",
+                        paddingBottom: "0.5rem",
+                      }}
+                    >
+                      {item.submenu.map((subItem) => {
+                        const isSubActive = pathname === subItem.path;
+                        return (
+                          <Link
+                            key={subItem.name}
+                            href={subItem.path}
+                            onClick={() => setIsSidebarOpen(false)}
+                            className={`sidebar-nav-item ${isSubActive ? "active" : ""}`}
+                            style={{
+                              fontSize: "0.875rem",
+                              padding: "0.5rem 0.75rem",
+                            }}
+                          >
+                            {subItem.icon}
+                            <span className="nav-item-text">
+                              {subItem.name}
+                            </span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
             return (
               <Link
                 key={item.name}

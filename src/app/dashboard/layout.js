@@ -14,6 +14,9 @@ import {
   Menu,
   X,
   BarChart3,
+  CreditCard,
+  FileText,
+  FileSpreadsheet,
 } from "lucide-react";
 import { logoutAction } from "@/app/actions/auth";
 import { createClient } from "@/lib/supabase/client";
@@ -66,6 +69,11 @@ export default function DashboardLayout({ children }) {
       path: "/dashboard/analytics",
     },
     {
+      name: "Reports",
+      icon: <FileSpreadsheet size={20} />,
+      path: "/dashboard/reports",
+    },
+    {
       name: "Doctors",
       icon: <HeartPulse size={20} />,
       path: "/dashboard/doctors",
@@ -79,6 +87,16 @@ export default function DashboardLayout({ children }) {
       name: "Token Queue",
       icon: <Users size={20} />,
       path: "/dashboard/queue",
+    },
+    {
+      name: "Subscription",
+      icon: <CreditCard size={20} />,
+      path: "/dashboard/subscription",
+    },
+    {
+      name: "Invoices",
+      icon: <FileText size={20} />,
+      path: "/dashboard/invoices",
     },
     {
       name: "Settings",
