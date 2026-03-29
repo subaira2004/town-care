@@ -291,12 +291,17 @@ supabase/
 
 Execute the SQL migration in Supabase SQL Editor:
 
-```bash
-# Option 1: Via Supabase Dashboard
-# Copy supabase/migrations/0004_subscription_and_reports.sql
-# Paste into Supabase SQL Editor and run
+**Steps:**
+1. Go to your Supabase project dashboard: https://supabase.com/dashboard
+2. Select your project
+3. Open **SQL Editor** (left sidebar)
+4. Click **New Query**
+5. Copy the entire contents of `supabase/migrations/0004_subscription_and_reports.sql`
+6. Paste into the SQL Editor
+7. Click **Run** (or press Ctrl+Enter / Cmd+Enter)
 
-# Option 2: Via Drizzle Kit (if configured)
+**Alternative via Drizzle Kit (if configured):**
+```bash
 npm run db:push
 ```
 
