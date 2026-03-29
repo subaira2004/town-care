@@ -58,6 +58,7 @@ export const pharmacies = pgTable("pharmacies", {
   tokenFee: numeric("token_fee", { precision: 10, scale: 2 }).default("0"),
   paymentRequired: boolean("payment_required").default(false),
   status: text("status").default("pending"),
+  showSubscription: boolean("show_subscription").default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 

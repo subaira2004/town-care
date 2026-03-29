@@ -243,335 +243,342 @@ export default function SettingsPage() {
       <div className="settings-columns">
         {/* LEFT COLUMN: Profile Requests */}
         <div>
-          {/* Subscription Status Card */}
-          <div className="card glass-panel" style={{ marginBottom: "2rem" }}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "1rem",
-              }}
-            >
-              <h2 className="card-title" style={{ margin: 0 }}>
-                <CreditCard size={20} color="var(--primary)" /> Subscription
-                Status
-              </h2>
-              <button
-                onClick={refreshData}
-                disabled={loading}
-                className="btn btn-outline btn-sm"
-                style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
-                title="Refresh subscription data"
-              >
-                <RefreshCw
-                  size={16}
-                  className={loading ? "animate-spin" : ""}
-                />
-                Refresh
-              </button>
-            </div>
-
-            {subscription ? (
+          {/* Subscription Status Card - Only show if admin allowed */}
+          {pharmacy?.show_subscription && (
+            <div className="card glass-panel" style={{ marginBottom: "2rem" }}>
               <div
                 style={{
                   display: "flex",
-                  flexDirection: "column",
-                  gap: "1rem",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "1rem",
                 }}
               >
-                {/* Plan Badge */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "1rem",
-                    backgroundColor: subscription.subscription_plans?.is_default
-                      ? "var(--primary)15"
-                      : "var(--surface)",
-                    borderRadius: "var(--radius-md)",
-                    border: subscription.subscription_plans?.is_default
-                      ? "1px solid var(--primary)"
-                      : "1px solid var(--border)",
-                  }}
-                >
-                  <div>
-                    <div
-                      style={{
-                        fontWeight: 800,
-                        fontSize: "1.125rem",
-                        color: "var(--text-main)",
-                      }}
-                    >
-                      {subscription.subscription_plans?.name ||
-                        "Plan Unavailable"}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: "0.75rem",
-                        color: "var(--text-muted)",
-                      }}
-                    >
-                      {subscription.subscription_plans?.description ||
-                        "Contact admin for plan details"}
-                    </div>
-                  </div>
-                  <div style={{ textAlign: "right" }}>
-                    <div
-                      style={{
-                        fontWeight: 900,
-                        fontSize: "1.25rem",
-                        color: "var(--primary)",
-                      }}
-                    >
-                      ₹{subscription.subscription_plans?.price_monthly || "0"}
-                      <span
-                        style={{
-                          fontSize: "0.75rem",
-                          fontWeight: 600,
-                          color: "var(--text-muted)",
-                        }}
-                      >
-                        /month
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Status Badge */}
-                <div
+                <h2 className="card-title" style={{ margin: 0 }}>
+                  <CreditCard size={20} color="var(--primary)" /> Subscription
+                  Status
+                </h2>
+                <button
+                  onClick={refreshData}
+                  disabled={loading}
+                  className="btn btn-outline btn-sm"
                   style={{
                     display: "flex",
                     alignItems: "center",
                     gap: "0.5rem",
-                    padding: "0.75rem",
-                    backgroundColor:
-                      subscription.status === "active"
-                        ? "var(--secondary)15"
-                        : "var(--surface-hover)",
-                    borderRadius: "var(--radius-md)",
-                    border:
-                      subscription.status === "active"
-                        ? "1px solid var(--secondary)"
-                        : "1px solid var(--border)",
+                  }}
+                  title="Refresh subscription data"
+                >
+                  <RefreshCw
+                    size={16}
+                    className={loading ? "animate-spin" : ""}
+                  />
+                  Refresh
+                </button>
+              </div>
+
+              {subscription ? (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "1rem",
                   }}
                 >
-                  <Check
-                    size={18}
-                    color={
-                      subscription.status === "active"
-                        ? "var(--secondary)"
-                        : "var(--text-muted)"
-                    }
-                  />
-                  <span
-                    style={{
-                      fontWeight: 700,
-                      color:
-                        subscription.status === "active"
-                          ? "var(--secondary)"
-                          : "var(--text-muted)",
-                      textTransform: "uppercase",
-                      fontSize: "0.75rem",
-                    }}
-                  >
-                    {subscription.status || "Inactive"}
-                  </span>
-                </div>
-
-                {/* Usage Progress */}
-                <div>
+                  {/* Plan Badge */}
                   <div
                     style={{
                       display: "flex",
+                      alignItems: "center",
                       justifyContent: "space-between",
-                      marginBottom: "0.5rem",
-                      fontSize: "0.875rem",
+                      padding: "1rem",
+                      backgroundColor: subscription.subscription_plans
+                        ?.is_default
+                        ? "var(--primary)15"
+                        : "var(--surface)",
+                      borderRadius: "var(--radius-md)",
+                      border: subscription.subscription_plans?.is_default
+                        ? "1px solid var(--primary)"
+                        : "1px solid var(--border)",
                     }}
                   >
-                    <span
-                      style={{ color: "var(--text-muted)", fontWeight: 600 }}
-                    >
-                      Tokens Used
-                    </span>
-                    <span style={{ fontWeight: 700 }}>
-                      {subscription.tokens_used_this_month || 0} /{" "}
-                      {subscription.subscription_plans?.max_tokens_per_month ===
-                      0
-                        ? "∞"
-                        : subscription.subscription_plans
-                            ?.max_tokens_per_month || "N/A"}
-                    </span>
-                  </div>
-                  {subscription.subscription_plans?.max_tokens_per_month >
-                    0 && (
-                    <>
+                    <div>
                       <div
                         style={{
-                          height: "8px",
-                          backgroundColor: "var(--border)",
-                          borderRadius: "var(--radius-sm)",
-                          overflow: "hidden",
+                          fontWeight: 800,
+                          fontSize: "1.125rem",
+                          color: "var(--text-main)",
                         }}
                       >
-                        <div
-                          style={{
-                            height: "100%",
-                            width: `${Math.min((subscription.tokens_used_this_month / subscription.subscription_plans.max_tokens_per_month) * 100, 100)}%`,
-                            backgroundColor:
-                              subscription.tokens_used_this_month /
-                                subscription.subscription_plans
-                                  .max_tokens_per_month >
-                              0.8
-                                ? "var(--warning)"
-                                : "var(--primary)",
-                            transition: "width 0.3s ease",
-                          }}
-                        />
+                        {subscription.subscription_plans?.name ||
+                          "Plan Unavailable"}
                       </div>
                       <div
                         style={{
                           fontSize: "0.75rem",
                           color: "var(--text-muted)",
-                          marginTop: "0.25rem",
-                          textAlign: "right",
                         }}
                       >
-                        {Math.round(
-                          (subscription.tokens_used_this_month /
-                            subscription.subscription_plans
-                              .max_tokens_per_month) *
-                            100,
-                        )}
-                        % used
+                        {subscription.subscription_plans?.description ||
+                          "Contact admin for plan details"}
                       </div>
-                    </>
-                  )}
-                </div>
-
-                {/* Plan Features */}
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(2, 1fr)",
-                    gap: "0.75rem",
-                    padding: "1rem",
-                    backgroundColor: "var(--surface)",
-                    borderRadius: "var(--radius-md)",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
-                    }}
-                  >
-                    <TrendingUp size={16} color="var(--text-muted)" />
-                    <div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
                       <div
                         style={{
-                          fontSize: "0.65rem",
-                          color: "var(--text-muted)",
-                          fontWeight: 600,
+                          fontWeight: 900,
+                          fontSize: "1.25rem",
+                          color: "var(--primary)",
                         }}
                       >
-                        Schedules
-                      </div>
-                      <div style={{ fontWeight: 700, fontSize: "0.875rem" }}>
-                        {subscription.subscription_plans?.max_schedules === 0
-                          ? "∞"
-                          : subscription.subscription_plans?.max_schedules ||
-                            "N/A"}
+                        ₹{subscription.subscription_plans?.price_monthly || "0"}
+                        <span
+                          style={{
+                            fontSize: "0.75rem",
+                            fontWeight: 600,
+                            color: "var(--text-muted)",
+                          }}
+                        >
+                          /month
+                        </span>
                       </div>
                     </div>
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
-                    }}
-                  >
-                    <Users size={16} color="var(--text-muted)" />
-                    <div>
-                      <div
-                        style={{
-                          fontSize: "0.65rem",
-                          color: "var(--text-muted)",
-                          fontWeight: 600,
-                        }}
-                      >
-                        Doctors
-                      </div>
-                      <div style={{ fontWeight: 700, fontSize: "0.875rem" }}>
-                        {subscription.subscription_plans?.max_doctors === 0
-                          ? "∞"
-                          : subscription.subscription_plans?.max_doctors ||
-                            "N/A"}
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
-                {/* Period Info */}
-                {subscription.current_period_end && (
+                  {/* Status Badge */}
                   <div
                     style={{
                       display: "flex",
                       alignItems: "center",
                       gap: "0.5rem",
                       padding: "0.75rem",
-                      backgroundColor: "var(--surface-hover)",
+                      backgroundColor:
+                        subscription.status === "active"
+                          ? "var(--secondary)15"
+                          : "var(--surface-hover)",
                       borderRadius: "var(--radius-md)",
-                      fontSize: "0.75rem",
+                      border:
+                        subscription.status === "active"
+                          ? "1px solid var(--secondary)"
+                          : "1px solid var(--border)",
                     }}
                   >
-                    <Calendar size={14} color="var(--text-muted)" />
-                    <span style={{ color: "var(--text-muted)" }}>
-                      Renews on:
-                    </span>
-                    <span style={{ fontWeight: 600 }}>
-                      {new Date(
-                        subscription.current_period_end,
-                      ).toLocaleDateString()}
+                    <Check
+                      size={18}
+                      color={
+                        subscription.status === "active"
+                          ? "var(--secondary)"
+                          : "var(--text-muted)"
+                      }
+                    />
+                    <span
+                      style={{
+                        fontWeight: 700,
+                        color:
+                          subscription.status === "active"
+                            ? "var(--secondary)"
+                            : "var(--text-muted)",
+                        textTransform: "uppercase",
+                        fontSize: "0.75rem",
+                      }}
+                    >
+                      {subscription.status || "Inactive"}
                     </span>
                   </div>
-                )}
 
-                <p
+                  {/* Usage Progress */}
+                  <div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginBottom: "0.5rem",
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      <span
+                        style={{ color: "var(--text-muted)", fontWeight: 600 }}
+                      >
+                        Tokens Used
+                      </span>
+                      <span style={{ fontWeight: 700 }}>
+                        {subscription.tokens_used_this_month || 0} /{" "}
+                        {subscription.subscription_plans
+                          ?.max_tokens_per_month === 0
+                          ? "∞"
+                          : subscription.subscription_plans
+                              ?.max_tokens_per_month || "N/A"}
+                      </span>
+                    </div>
+                    {subscription.subscription_plans?.max_tokens_per_month >
+                      0 && (
+                      <>
+                        <div
+                          style={{
+                            height: "8px",
+                            backgroundColor: "var(--border)",
+                            borderRadius: "var(--radius-sm)",
+                            overflow: "hidden",
+                          }}
+                        >
+                          <div
+                            style={{
+                              height: "100%",
+                              width: `${Math.min((subscription.tokens_used_this_month / subscription.subscription_plans.max_tokens_per_month) * 100, 100)}%`,
+                              backgroundColor:
+                                subscription.tokens_used_this_month /
+                                  subscription.subscription_plans
+                                    .max_tokens_per_month >
+                                0.8
+                                  ? "var(--warning)"
+                                  : "var(--primary)",
+                              transition: "width 0.3s ease",
+                            }}
+                          />
+                        </div>
+                        <div
+                          style={{
+                            fontSize: "0.75rem",
+                            color: "var(--text-muted)",
+                            marginTop: "0.25rem",
+                            textAlign: "right",
+                          }}
+                        >
+                          {Math.round(
+                            (subscription.tokens_used_this_month /
+                              subscription.subscription_plans
+                                .max_tokens_per_month) *
+                              100,
+                          )}
+                          % used
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Plan Features */}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(2, 1fr)",
+                      gap: "0.75rem",
+                      padding: "1rem",
+                      backgroundColor: "var(--surface)",
+                      borderRadius: "var(--radius-md)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                      }}
+                    >
+                      <TrendingUp size={16} color="var(--text-muted)" />
+                      <div>
+                        <div
+                          style={{
+                            fontSize: "0.65rem",
+                            color: "var(--text-muted)",
+                            fontWeight: 600,
+                          }}
+                        >
+                          Schedules
+                        </div>
+                        <div style={{ fontWeight: 700, fontSize: "0.875rem" }}>
+                          {subscription.subscription_plans?.max_schedules === 0
+                            ? "∞"
+                            : subscription.subscription_plans?.max_schedules ||
+                              "N/A"}
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                      }}
+                    >
+                      <Users size={16} color="var(--text-muted)" />
+                      <div>
+                        <div
+                          style={{
+                            fontSize: "0.65rem",
+                            color: "var(--text-muted)",
+                            fontWeight: 600,
+                          }}
+                        >
+                          Doctors
+                        </div>
+                        <div style={{ fontWeight: 700, fontSize: "0.875rem" }}>
+                          {subscription.subscription_plans?.max_doctors === 0
+                            ? "∞"
+                            : subscription.subscription_plans?.max_doctors ||
+                              "N/A"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Period Info */}
+                  {subscription.current_period_end && (
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                        padding: "0.75rem",
+                        backgroundColor: "var(--surface-hover)",
+                        borderRadius: "var(--radius-md)",
+                        fontSize: "0.75rem",
+                      }}
+                    >
+                      <Calendar size={14} color="var(--text-muted)" />
+                      <span style={{ color: "var(--text-muted)" }}>
+                        Renews on:
+                      </span>
+                      <span style={{ fontWeight: 600 }}>
+                        {new Date(
+                          subscription.current_period_end,
+                        ).toLocaleDateString()}
+                      </span>
+                    </div>
+                  )}
+
+                  <p
+                    style={{
+                      fontSize: "0.75rem",
+                      color: "var(--text-muted)",
+                      textAlign: "center",
+                      fontStyle: "italic",
+                    }}
+                  >
+                    Contact platform admin for subscription changes
+                  </p>
+                </div>
+              ) : (
+                <div
                   style={{
-                    fontSize: "0.75rem",
-                    color: "var(--text-muted)",
+                    padding: "2rem",
                     textAlign: "center",
-                    fontStyle: "italic",
+                    color: "var(--text-muted)",
                   }}
                 >
-                  Contact platform admin for subscription changes
-                </p>
-              </div>
-            ) : (
-              <div
-                style={{
-                  padding: "2rem",
-                  textAlign: "center",
-                  color: "var(--text-muted)",
-                }}
-              >
-                <CreditCard
-                  size={48}
-                  style={{ marginBottom: "1rem", opacity: 0.3 }}
-                />
-                <p style={{ fontWeight: 600, marginBottom: "0.5rem" }}>
-                  No Subscription
-                </p>
-                <p style={{ fontSize: "0.75rem" }}>
-                  Your pharmacy is on the free plan. Contact admin to upgrade.
-                </p>
-              </div>
-            )}
-          </div>
+                  <CreditCard
+                    size={48}
+                    style={{ marginBottom: "1rem", opacity: 0.3 }}
+                  />
+                  <p style={{ fontWeight: 600, marginBottom: "0.5rem" }}>
+                    No Subscription
+                  </p>
+                  <p style={{ fontSize: "0.75rem" }}>
+                    Your pharmacy is on the free plan. Contact admin to upgrade.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="card glass-panel">
             <h2 className="card-title">

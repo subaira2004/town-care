@@ -192,6 +192,28 @@ export default function AdminSubscriptionsPharmaciesPage() {
     setLoading(false);
   };
 
+  const handleToggleSubscription = async (pharmacyId, currentValue) => {
+    const newValue = !currentValue;
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("pharmacies")
+        .update({ show_subscription: newValue })
+        .eq("id", pharmacyId);
+      if (error) throw error;
+      setMessage({
+        type: "success",
+        text: newValue
+          ? "Subscription visibility enabled for pharmacy"
+          : "Subscription visibility disabled for pharmacy",
+      });
+      mutate();
+    } catch (error) {
+      setMessage({ type: "error", text: error.message });
+    }
+    setLoading(false);
+  };
+
   const filteredPharmacies =
     pharmacies?.filter((pharm) => {
       const sub = pharm.pharmacy_subscriptions?.[0];
@@ -334,6 +356,7 @@ export default function AdminSubscriptionsPharmaciesPage() {
                 <th style={{ padding: "1rem" }}>Subscription</th>
                 <th style={{ padding: "1rem" }}>Period</th>
                 <th style={{ padding: "1rem" }}>Usage</th>
+                <th style={{ padding: "1rem" }}>Show Sub</th>
                 <th style={{ padding: "1rem", textAlign: "right" }}>Actions</th>
               </tr>
             </thead>
@@ -453,6 +476,37 @@ export default function AdminSubscriptionsPharmaciesPage() {
                           Unlimited
                         </span>
                       )}
+                    </td>
+                    <td style={{ padding: "1rem", textAlign: "center" }}>
+                      <label
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "0.5rem",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={!!pharm.show_subscription}
+                          onChange={() =>
+                            handleToggleSubscription(
+                              pharm.id,
+                              pharm.show_subscription,
+                            )
+                          }
+                          disabled={loading}
+                          style={{
+                            width: "18px",
+                            height: "18px",
+                            cursor: "pointer",
+                          }}
+                        />
+                        <span style={{ fontSize: "0.75rem", fontWeight: 600 }}>
+                          {pharm.show_subscription ? "Yes" : "No"}
+                        </span>
+                      </label>
                     </td>
                     <td style={{ padding: "1rem", textAlign: "right" }}>
                       <div

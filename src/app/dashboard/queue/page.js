@@ -439,95 +439,103 @@ function QueueContent() {
                   <div className="empty-state-text">{t("noTokens", pref)}</div>
                 </div>
               ) : (
-                tokens.map((token) => (
-                  <div
-                    key={token.id}
-                    className="token-card animate-fade-in"
-                    style={{
-                      backgroundColor:
-                        token.status === "in_consultation"
-                          ? "rgba(79, 70, 229, 0.05)"
-                          : "var(--surface)",
-                    }}
-                  >
-                    <div className="token-card-content">
-                      <div
-                        className="token-number-badge"
-                        style={{
-                          backgroundColor:
-                            token.status === "completed"
-                              ? "var(--text-muted)"
-                              : token.status === "unattended"
-                                ? "var(--danger)"
-                                : "var(--primary)",
-                        }}
-                      >
-                        {token.token_number}
-                      </div>
-                      <div className="token-card-info">
-                        <div className="token-card-name">
-                          {token.patients?.name}
+                <div style={{ padding: "5px" }}>
+                  {tokens.map((token) => (
+                    <div
+                      key={token.id}
+                      className="token-card animate-fade-in"
+                      style={{
+                        backgroundColor:
+                          token.status === "in_consultation"
+                            ? "rgba(79, 70, 229, 0.05)"
+                            : "var(--surface)",
+                      }}
+                    >
+                      <div className="token-card-content">
+                        <div
+                          className="token-number-badge"
+                          style={{
+                            backgroundColor:
+                              token.status === "completed"
+                                ? "var(--text-muted)"
+                                : token.status === "unattended"
+                                  ? "var(--danger)"
+                                  : "var(--primary)",
+                          }}
+                        >
+                          {token.token_number}
                         </div>
-                        <div className="token-card-meta">
-                          <span className="token-card-phone">
-                            <Phone size={14} /> {token.patients?.phone}
-                          </span>
-                          {token.appointment_time && (
-                            <span className="token-card-time">
-                              <Clock size={16} />{" "}
-                              {token.appointment_time.slice(0, 5)}
+                        <div className="token-card-info">
+                          <div className="token-card-name">
+                            {token.patients?.name}
+                          </div>
+                          <div className="token-card-meta">
+                            <span className="token-card-phone">
+                              <Phone size={14} /> {token.patients?.phone}
                             </span>
-                          )}
+                            {token.appointment_time && (
+                              <span className="token-card-time">
+                                <Clock size={16} />{" "}
+                                {token.appointment_time.slice(0, 5)}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="token-card-actions">
-                      {token.status === "waiting" && (
+                      <div className="token-card-actions">
+                        {token.status === "waiting" && (
+                          <button
+                            onClick={() =>
+                              supabase
+                                .from("tokens")
+                                .update({ status: "in_consultation" })
+                                .eq("id", token.id)
+                                .then(() => fetchTokens(selectedScheduleId))
+                            }
+                            className="btn btn-secondary shadow-sm"
+                            style={{
+                              padding: "0.8rem 1.75rem",
+                              fontWeight: 800,
+                            }}
+                          >
+                            {t("startConsultation", pref).toUpperCase()}
+                          </button>
+                        )}
+                        {token.status === "in_consultation" && (
+                          <button
+                            onClick={() =>
+                              supabase
+                                .from("tokens")
+                                .update({ status: "completed" })
+                                .eq("id", token.id)
+                                .then(() => fetchTokens(selectedScheduleId))
+                            }
+                            className="btn btn-primary shadow-sm"
+                            style={{
+                              padding: "0.8rem 1.75rem",
+                              fontWeight: 800,
+                            }}
+                          >
+                            {t("completeToken", pref).toUpperCase()}
+                          </button>
+                        )}
                         <button
-                          onClick={() =>
-                            supabase
-                              .from("tokens")
-                              .update({ status: "in_consultation" })
-                              .eq("id", token.id)
-                              .then(() => fetchTokens(selectedScheduleId))
-                          }
-                          className="btn btn-secondary shadow-sm"
-                          style={{ padding: "0.8rem 1.75rem", fontWeight: 800 }}
+                          onClick={() => handleShare(token)}
+                          className="btn btn-outline"
+                          style={{
+                            padding: "0.8rem",
+                            fontWeight: 600,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.5rem",
+                          }}
                         >
-                          {t("startConsultation", pref).toUpperCase()}
+                          <Share2 size={16} /> {t("shareViaWhatsApp", pref)}
                         </button>
-                      )}
-                      {token.status === "in_consultation" && (
-                        <button
-                          onClick={() =>
-                            supabase
-                              .from("tokens")
-                              .update({ status: "completed" })
-                              .eq("id", token.id)
-                              .then(() => fetchTokens(selectedScheduleId))
-                          }
-                          className="btn btn-primary shadow-sm"
-                          style={{ padding: "0.8rem 1.75rem", fontWeight: 800 }}
-                        >
-                          {t("completeToken", pref).toUpperCase()}
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleShare(token)}
-                        className="btn btn-outline"
-                        style={{
-                          padding: "0.8rem",
-                          fontWeight: 600,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                        }}
-                      >
-                        <Share2 size={16} /> {t("shareViaWhatsApp", pref)}
-                      </button>
+                      </div>
                     </div>
-                  </div>
-                ))
+                  ))}
+                </div>
               )}
             </div>
           </div>
