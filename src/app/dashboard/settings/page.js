@@ -66,26 +66,62 @@ export default function SettingsPage() {
     if (!user) return;
 
     // Fetch Towns
-    const { data: tData } = await supabase
+    const { data: tData, error: tError } = await supabase
       .from("towns")
       .select("*")
       .eq("is_active", true)
       .order("name");
+
+    if (tError) console.error("Error fetching towns:", tError);
     setTowns(tData || []);
 
-    const { data: pData } = await supabase
+    // Fetch pharmacy with subscription - use explicit query
+    const { data: pData, error: pError } = await supabase
       .from("pharmacies")
       .select(
         `
-        *,
+        id,
+        name,
+        phone,
+        language,
+        payment_required,
+        token_fee,
+        upi_qr_url,
+        town_id,
+        town_name,
+        user_id,
+        status,
         pharmacy_subscriptions (
-          *,
-          subscription_plans (*)
+          id,
+          plan_id,
+          status,
+          current_period_start,
+          current_period_end,
+          tokens_used_this_month,
+          subscription_plans (
+            id,
+            name,
+            description,
+            price_monthly,
+            price_yearly,
+            max_tokens_per_month,
+            max_schedules,
+            max_doctors,
+            is_default
+          )
         )
       `,
       )
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
+
+    if (pError) {
+      console.error("Error fetching pharmacy:", pError);
+      setMessage({ type: "error", text: "Failed to load pharmacy data" });
+    }
+
+    console.log("Pharmacy data:", pData);
+
     if (pData) {
       setPharmacy(pData);
       setProfileData({
@@ -98,8 +134,10 @@ export default function SettingsPage() {
       setTokenFee(pData.token_fee || "");
       setQrPreview(pData.upi_qr_url || null);
 
-      // Get subscription
-      const sub = pData.pharmacy_subscriptions?.[0];
+      // Get subscription - check if array or direct object
+      const subs = pData.pharmacy_subscriptions;
+      const sub = Array.isArray(subs) ? subs[0] : subs;
+      console.log("Subscription extracted:", sub);
       setSubscription(sub || null);
 
       // Check for pending requests
@@ -266,7 +304,8 @@ export default function SettingsPage() {
                         color: "var(--text-main)",
                       }}
                     >
-                      {subscription.subscription_plans?.name || "N/A"}
+                      {subscription.subscription_plans?.name ||
+                        "Plan Unavailable"}
                     </div>
                     <div
                       style={{
@@ -275,7 +314,7 @@ export default function SettingsPage() {
                       }}
                     >
                       {subscription.subscription_plans?.description ||
-                        "No description"}
+                        "Contact admin for plan details"}
                     </div>
                   </div>
                   <div style={{ textAlign: "right" }}>
@@ -286,7 +325,7 @@ export default function SettingsPage() {
                         color: "var(--primary)",
                       }}
                     >
-                      ₹{subscription.subscription_plans?.price_monthly || 0}
+                      ₹{subscription.subscription_plans?.price_monthly || "0"}
                       <span
                         style={{
                           fontSize: "0.75rem",

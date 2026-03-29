@@ -138,10 +138,8 @@ export default function AdminSubscriptionsPharmaciesPage() {
       setSelectedPharmacy(null);
       setSelectedPlanId("");
 
-      // Force reload to ensure fresh data
-      setTimeout(() => {
-        mutate();
-      }, 100);
+      // Force reload the page to ensure all tabs and data are refreshed
+      window.location.reload();
     } catch (error) {
       setMessage({ type: "error", text: error.message });
     }
