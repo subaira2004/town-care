@@ -24,6 +24,7 @@ export default function AdminLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [admin, setAdmin] = useState(null);
+  const [expandedMenu, setExpandedMenu] = useState(null);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -68,8 +69,6 @@ export default function AdminLayout({ children }) {
     router.push("/admin/login");
     router.refresh();
   };
-
-  const [expandedMenu, setExpandedMenu] = useState(null);
 
   const menuItems = [
     { name: "Pharmacies", icon: <Store size={20} />, path: "/admin" },
