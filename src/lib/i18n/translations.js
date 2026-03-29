@@ -116,6 +116,7 @@ const translations = {
     completed: "Completed",
     skipped: "Skipped",
     cancelled: "Cancelled",
+    unattended: "Unattended",
     addToken: "Add Token",
     nextPatient: "Next Patient",
     completeToken: "Complete",
@@ -315,6 +316,7 @@ const translations = {
     completed: "முடிந்தது",
     skipped: "தள்ளிவைக்கப்பட்டது",
     cancelled: "ரத்து செய்யப்பட்டது",
+    unattended: "கலந்து கொள்ளவில்லை",
     addToken: "டோக்கன் சேர்",
     nextPatient: "அடுத்த நோயாளி",
     completeToken: "முடிந்தது",
@@ -423,6 +425,7 @@ export function getStatusLabel(status, lang = "en") {
     completed: "completed",
     skipped: "skipped",
     cancelled: "cancelled",
+    unattended: "unattended",
   };
   return t(map[status] || status, lang);
 }

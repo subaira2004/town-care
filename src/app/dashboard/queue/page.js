@@ -21,6 +21,7 @@ import {
   MessageCircle,
   Smartphone,
   Copy,
+  Archive,
 } from "lucide-react";
 import {
   getTodayDate,
@@ -228,6 +229,36 @@ function QueueContent() {
     setBookingScheduleId("");
   };
 
+  const handleEndOfDay = async () => {
+    if (!selectedScheduleId) return;
+
+    if (
+      !confirm(
+        'Mark all incomplete tokens as "Unattended" for this schedule? This cannot be undone.',
+      )
+    ) {
+      return;
+    }
+
+    setLoading(true);
+
+    // Update all waiting and in_consultation tokens to unattended
+    const { error } = await supabase
+      .from("tokens")
+      .update({ status: "unattended" })
+      .eq("schedule_id", selectedScheduleId)
+      .in("status", ["waiting", "in_consultation"]);
+
+    if (error) {
+      alert("Error marking tokens as unattended: " + error.message);
+    } else {
+      alert("All incomplete tokens marked as Unattended!");
+      fetchTokens(selectedScheduleId);
+    }
+
+    setLoading(false);
+  };
+
   const handleShare = (token) => {
     setSelectedToken(token);
     setShowShareModal(true);
@@ -343,6 +374,24 @@ function QueueContent() {
                 </option>
               )}
             </select>
+
+            {selectedScheduleId && (
+              <button
+                onClick={handleEndOfDay}
+                className="btn btn-outline"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  borderColor: "var(--danger)",
+                  color: "var(--danger)",
+                }}
+                title="Mark all incomplete tokens as unattended"
+              >
+                <Archive size={16} />
+                End of Day
+              </button>
+            )}
           </div>
 
           <div className="token-list">
@@ -408,7 +457,9 @@ function QueueContent() {
                           backgroundColor:
                             token.status === "completed"
                               ? "var(--text-muted)"
-                              : "var(--primary)",
+                              : token.status === "unattended"
+                                ? "var(--danger)"
+                                : "var(--primary)",
                         }}
                       >
                         {token.token_number}
